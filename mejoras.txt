@@ -1,0 +1,8 @@
+endpoints de /libs a /api
+refactorizar todos los endpoints que estan en la raiz
+pasar herramientas a carpeta de utils bien ubicada
+admin.php y panel.php a /admin y /panel
+sacar los estilos y scripts inline
+refactorizar scripts para agrupar funcionalidades en diferentes archivos
+usar c3tools online
+usar SCSS

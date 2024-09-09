@@ -1,0 +1,4 @@
+/protected/*
+!/protected/.htaccess
+estado.txt
+.vscode

@@ -1,0 +1,116 @@
+:root{
+	--mainColor:white;
+}
+html, body{
+	height:100%;}
+	body{
+		display:flex;margin: auto;
+		background: var(--mainColor);
+		font-family: sans-serif;}
+		.over{
+			position: absolute;width: 100vw;height: 100vh;
+			background: rgba(0,0,0,.5);}
+			#loading{
+				z-index: 2;
+				display: flex;}
+				.loading-initial{
+					background: var(--mainColor);}
+				#loading > img{
+					margin: auto;
+					width: 30vmin;}
+			#register{
+				z-index:1;}
+		#header{
+			position: absolute;
+			top: 0;left: 0;right: 0;
+			padding:.75rem;
+			margin: 0;
+			font-size: 1.5rem;
+			text-align: center;
+			background: var(--encabezado);color:var(--texto-encabezado);
+			border-bottom: solid var(--acento) 3px;
+		}
+		.card{
+			margin: auto;
+			background: white;
+			/* padding: 30px; */
+			border-radius: 20px;
+			/* border: solid 3px #CCC; */
+			text-align: center;
+			max-height: 90%;overflow: auto;}
+			/* #loading{
+				box-shadow: 10px 10px 10px #B0DFC3;} */
+			#registerForm{
+				padding: 1rem;box-sizing: border-box;
+			}
+				form > *{
+					margin: auto;}
+					form > img{
+						height: 20vh;width: 100%;object-fit: contain;}
+					form > input{
+						display: block;}
+					#searchDiv{
+						display: grid;grid-template: "a b";
+						width: 100%;}
+						#searchDiv > div{
+							display: grid;}
+							#searchDiv input{
+								display: block;}
+								#searchDiv input:not(:last-child){
+									margin-bottom: 10px;}
+						#searchDiv button{
+							margin: 5px;}
+							#citySelection > button {
+								display: block;width: 70%;margin: 8px auto;
+								max-width: 200px;
+								max-height: 150px;overflow-y: auto;}
+					#campos{
+						display: grid;
+						gap: 20px;padding: 20px 0;}
+						/* #campos > * */
+						input:not([type="submit"]){
+							padding: 5px 0;
+							border: none;
+							border-bottom: solid 1px #9E9E9E;
+							transition: border-width 0.2s;
+						}
+						/* #campos > * */
+						input:not([type="submit"]):focus{
+							border-bottom: solid 4px #369683 !important;
+						}
+					#botones{
+						/* display: flex;justify-content: space-evenly; */
+						display: grid;gap:10px;
+						}
+						button, input[type="submit"]{
+							background: #369683;cursor: pointer;
+							/* margin: .75rem; */
+							padding: .5em 1em;
+							color: white;
+							/* font-weight: bold; */
+							text-align: center;
+							border-radius:8px;
+							border:none;
+						}
+			#register .card > *{
+				margin:15px auto;}
+				
+#map{
+	height: 200px;}
+@media screen and (min-aspect-ratio: 13/9) {
+	.card{
+		width: 17%;
+	}
+		#registerForm{
+			width: 35%;
+		}
+		#map{
+			width:30vw;}
+}
+@media screen and (max-aspect-ratio: 13/9) {
+	.card{
+		width: 90%;
+	}
+		#map{
+			width:100%;}
+}
