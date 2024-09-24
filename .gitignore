@@ -2,3 +2,4 @@
 !/protected/.htaccess
 estado.txt
 .vscode
+libs/db.php

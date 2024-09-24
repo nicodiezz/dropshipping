@@ -411,9 +411,9 @@ else echo '			crearLogin();';
 require 'libs/db.php';
 
 $options=$db->query("SELECT * FROM `pd_categorias`");
-while($option=$options->fetch_assoc())
+while($option=$options->fetch_assoc()){
 echo "<option value={$option['ID']}>{$option['nombre']}</option>";
-
+}
 ?>
 				</select></label>
 				<div id=searchDiv>
