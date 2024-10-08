@@ -24,72 +24,11 @@ $nombre=$personalizacion['nombre'];
 			background:#<?=$_SESSION['color']?>;}
 	</style>
 	
-	<link rel="stylesheet" href="/libs/OpenLayers/ol.css">
-	<script src="/libs/OpenLayers/ol.js"></script>
+
 	
 	<script src="/libs/c3tools.js"></script>
 	<script src="/panel/main.js"></script>
-	<script>
-		
-	addEventListener('DOMContentLoaded',()=>{
-		
-		let originalCoordinates=[<?=$_SESSION['lon'].','.$_SESSION['lat']?>]
-			,originalMapCoordinates=fromLonLat(originalCoordinates)
-			,reestablecerMap=gEt('reestablecer-map');
-		markerPoint.setCoordinates(originalMapCoordinates);
-		map = new ol.Map({
-			interactions: ol.interaction.defaults().extend([new Drag()]),
-			layers: [
-				new ol.layer.Tile({
-					source: new ol.source.OSM()
-				})
-				,new ol.layer.Vector({
-					source: new ol.source.Vector({
-						features: [new ol.Feature({
-							type: 'geoMarker',
-							geometry: markerPoint
-						})]
-					})
-					,style: new ol.style.Style({
-						image: new ol.style.Circle({
-							fill:fill
-							,stroke:stroke
-							,radius:8
-						})
-						,fill:fill
-						,stroke:stroke
-					})
-				})
-			],
-			target: 'map',
-			view: new ol.View({
-				center: originalMapCoordinates,
-				zoom: originalCoordinates.reduce((ac,cu)=>ac&&cu)?15:2
-			})
-		});
-		let perfil=gEt('perfil');
-		perfil.classList.add('notSelectedPanel');
-		reestablecerMap.dataset.lon=originalCoordinates[0];
-		reestablecerMap.dataset.lat=originalCoordinates[1];
-		reestablecerMap.onclick=()=>{
-			markerPoint.setCoordinates(originalMapCoordinates);
-			map.getView().setCenter(originalMapCoordinates);
-			
-			for(let part of [
-				'pais'
-				,'provincia'
-				,'ciudad'
-				,'direccion'
-			]){
-				part=gEt(part+'Field');
-				part.value=part.defaultValue;
-			}
-			
-			reestablecerMap.classList.add('hidden');
-		}
-	});
-	
-	</script>
+
 </head>
 <body>
 	<div id="bulk-message">
@@ -159,8 +98,8 @@ $nombre=$personalizacion['nombre'];
 
 	<div id=content>
 		<!-- <div id=realPanel> -->
-			<form id=perfil class="hidden-scroll">
-				<!-- notSelectedPanel se pone despues de cargar el mapa desde el JS -->
+			<form id=perfil class="hidden-scroll notSelectedPanel">
+				
 				<h3>Datos de la cuenta</h3>
 				<div id="perfil-1">
 					<div id="perfil-1-main">
@@ -189,18 +128,6 @@ $nombre=$personalizacion['nombre'];
 							<button type=button id="reestablecer" class="cute-button hidden">Reestablecer</button>
 						</div>
 						
-						<p>País:</p>
-						<input name=pais id=paisField value="<?=$_SESSION['pais']?>" type="text" required>
-						
-						<p>Provincia:</p>
-						<input name=provincia id=provinciaField value="<?=$_SESSION['provincia']?>" type="text" required>
-						
-						<p>Ciudad:</p>
-						<input name=ciudad id=ciudadField value="<?=$_SESSION['ciudad']?>" type="text" required>
-						
-						<p>Dirección:</p>
-						<input name=direccion id=direccionField value="<?=$_SESSION['direccion']?>" type="text">
-						
 						<p>Descripción:</p>
 						<textarea maxlength="100" name=descripcion rows=4><?=$_SESSION['descripcion']?></textarea>
 					</div>
@@ -210,17 +137,7 @@ $nombre=$personalizacion['nombre'];
 						<button type=button onclick="resetImagePicker(this,'img/logo.php')" class="cute-button hidden">Reestablecer</button>
 					</div>
 				</div>
-				<div id="horarios-holder">
-					<h3>Horarios</h3><button id="horario-añadir" type="button" class="cute-button">Añadir horario</button>
-					<div id="horarios"></div>
-				</div>
-				<div id="perfil-2">
-					<!-- <div id="map-holder"> -->
-					<h3>Ubicación</h3>
-						<div id="map"></div>
-						<button id="reestablecer-map" type="button" class="cute-button hidden">Reestablecer mapa</button>
-					<!-- </div> -->
-				</div>
+				
 				<input type=submit value="Guardar Cambios" class="cute-button end-button" id="perfil-submit">
 				<div style="font-size: 1px;color:var(--almost-white);">.</div>
 			</form>

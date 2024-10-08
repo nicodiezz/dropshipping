@@ -12,111 +12,14 @@ var articulos={}
 	,thatColor='#369683'
 	;
 
-var map
-	,fromLonLat=ol.proj.fromLonLat
-	,toLonLat=ol.proj.toLonLat
-	,PointerInteraction=ol.interaction.Pointer
-	,Drag =(function (PointerInteraction) {
-		function Drag() {
-			PointerInteraction.call(this, {
-				handleDownEvent: function(evt) {
-					let map = evt.map,
-						feature = map.forEachFeatureAtPixel(evt.pixel,feature=>feature);
-					if (feature) {
-						this.coordinate_ = evt.coordinate;
-						this.feature_ = feature;
-					}
-					return !!feature;
-				},
-				handleDragEvent: function(evt) {
-					let deltaX = evt.coordinate[0] - this.coordinate_[0]
-						,deltaY = evt.coordinate[1] - this.coordinate_[1]
-						,geometry = this.feature_.getGeometry();
-						
-					geometry.translate(deltaX, deltaY);
-					
-					this.coordinate_[0] = evt.coordinate[0];
-					this.coordinate_[1] = evt.coordinate[1];
-				},
-				handleMoveEvent: function (evt) {
-					if (this.cursor_) {
-						let map = evt.map
-							,feature = map.forEachFeatureAtPixel(evt.pixel,feature=> feature)
-							,element = evt.map.getTargetElement();
-						if (feature) {
-							if (element.style.cursor != this.cursor_) {
-								this.previousCursor_ = element.style.cursor;
-								element.style.cursor = this.cursor_;
-							}
-						} else if (this.previousCursor_ !== undefined) {
-							element.style.cursor = this.previousCursor_;
-							this.previousCursor_ = undefined;
-						}
-					}
-				},
-				handleUpEvent: function(){
-					gEt('reestablecer-map').classList.remove('hidden');
-					let thisRequest=++requestNro,coords=toLonLat(markerPoint.getCoordinates());//.map(e=>normalizarNumero(+e));
-					fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+coords[1]+'&lon='+coords[0]+'&zoom=10')
-						.then(res=>{
-							if(thisRequest==requestNro)
-								return res.json()
-								// res.text()
-						})
-						.then(city=>{
-							if(thisRequest==requestNro){
-								if(city.error)
-									city.address={
-										country:''
-										,state:''
-										,city:''
-									}
-								let current;
-								for(let part of [
-									['pais','country']
-									,['provincia','state']
-									,['ciudad','city']
-								])
-									gEt(part[0]+'Field').value=city.address[part[1]]||'';
-							}
-						});
-					this.coordinate_ = null;
-					this.feature_ = null;
-					return false;
-				}
-			});
-			this.coordinate_ = null;
-			this.cursor_ = 'pointer';
-			this.feature_ = null;
-			this.previousCursor_ = undefined;
-		}
-		if ( PointerInteraction )
-			Drag.__proto__ = PointerInteraction;
-		Drag.prototype = Object.create( PointerInteraction && PointerInteraction.prototype );
-		Drag.prototype.constructor = Drag;
-		return Drag;
-	}(PointerInteraction))
-	
-	,markerPoint=new ol.geom.Point([0, 0])
-	,fill=new ol.style.Fill({
-		color: 'rgba(255,255,255,0.3)'
-	})
-	,stroke=new ol.style.Stroke({
-		color: '#56E48E',
-		width: 2
-	});
+
 
 function genericCatch(e){
 	console.log(e);
 	noSeHaPodido();
 }
 
-function pointMapTo(coords){
-	coords=fromLonLat(coords);
-	markerPoint.setCoordinates(coords);
-	map.getView().setCenter(coords);
-	//map.getView().setZoom(15);
-}
+
 
 function abrirEditor(artID=0,secID=0){
 	itemForm.previousElementSibling.classList.add('notSelectedPanel');
@@ -396,78 +299,7 @@ function crearSec(sec){
 	secciones[sec.ID]=sec.nombre;
 }
 
-function crearHorarios(...horarios){
-	for(let horario of horarios){
-		let frag=D.createDocumentFragment()
-			,dias=['Lun.','Mar.','Mié.','Jue.','Vie.','Sab.','Dom.'];
-		
-		frag.append(createNode(
-				'DIV',{
-					class:'horario'
-					,dataset:{id:horario.ID}
-				}
-					,
-					// children:[
-						[
-							'TABLE',{children:[
-								['TR',
-									['TD',{colSpan:7}
-										,[
-											'DIV',{
-												class:'horario-horas'
-												,children:[
-													[
-														'BUTTON',{
-															// innerText:'🗑'
-															// ,
-															classList:[
-																'horario-delete'
-																,'cute-button'
-															]
-															,type:'button'
-														},['I',{classList:['fas','fa-trash']}]
-													]
-													,['SPAN',{innerText:'Desde'}]
-													,['INPUT',{type:'time',name:'horario-desde',value:horario.desde}]
-													,['SPAN',{innerText:'Hasta'}]
-													,['INPUT',{type:'time',name:'horario-hasta',value:horario.hasta}]
-												]
-											}
-										]
-									]
-								]
-								,'TR'
-								,'TR'
-							]}
-						]
-					// ]
-				// }
-		));
-		
-		let upperRow=frag.firstChild.firstChild.children[1]
-			,lowerRow=frag.firstChild.firstChild.children[2];
-		for(let diaNum in dias){
-			upperRow.append(createNode(
-				'TD',[
-					'SPAN',{innerText:dias[diaNum]}
-				]
-			));
-			lowerRow.append(createNode(
-				'TD'
-				,[
-					'INPUT',{
-						type:'checkbox'
-						,value:diaNum
-						,checked:!!+horario.dias[diaNum]
-					}
-				]
-			));
-		}
-			
-		gEt('horarios').append(frag);
 
-	}
-}
 
 function fetchPedidos(page){
 	fetch('libs/ped/get.php?offset='+page)
@@ -521,11 +353,7 @@ function fetchPedidos(page){
 										total+=subtotalNumero;
 									}
 									
-									if(+pedido.delivery){
-										arr.push(['SPAN',{innerText:`• Delivery`}]);
-										arr.push(['SPAN',{innerText:`$\u00a0${pedido.precioDelivery}`}]);
-										total+=pedido.precioDelivery;
-									}
+									
 
 
 									return arr;
@@ -966,68 +794,7 @@ addEventListener('DOMContentLoaded',()=>{
 		}
 	}
 	
-	gEt('horario-añadir').onclick=()=>{
-		fetch('libs/hor/new.php')
-			.then(res=>res.text())
-			.then(ID=>{
-				if(+ID)
-					crearHorarios({
-						ID
-						,desde:0
-						,hasta:0
-						,dias:(new Array(7)).fill(false,7)
-					});
-			});
-	}
 	
-	gEt('horarios').onchange=e=>{
-		let target=e.target,value,propID;
-		switch(target.type.toLowerCase()){
-		case 'checkbox':
-			value=+target.checked;
-			propID=target.value;
-			break;
-		case 'time':
-			value=target.value;
-			switch(target.name){
-			case 'horario-desde':
-				propID=7;
-				break;
-			case 'horario-hasta':
-				propID=8;
-				break;
-			}
-			break;
-		}
-		target.disabled=true;
-		sendJSON('libs/hor/update.php',{
-			horarioID:target.closest('.horario').dataset.id
-			,value
-			,propID
-		})
-			.then(res=>res.json)
-			.then(res=>target.disabled=false);
-	}
-	
-	gEt('horarios').onclick=e=>{
-		let button=e.target;
-		if(
-			button.classList.contains('horario-delete')
-			|| (
-				button.classList.contains('fa-trash')
-				&& (button=button.parentNode)
-			)
-		){
-			let horario=button.closest('.horario')
-				,horarioID=horario.dataset.id;
-			sendJSON('libs/hor/delete.php',{horarioID})
-				.then(res=>res.text())
-				.then(resNum=>{
-					if(+resNum)
-						horario.remove();
-				});
-		}
-	}
 	
 	gEt('ped-mas').onclick=()=>fetchPedidos(++pedidosPage);
 	
@@ -1042,7 +809,7 @@ addEventListener('DOMContentLoaded',()=>{
 				let IDs=[];
 				switch(+res){
 				case 1:
-					IDs=[...SqS('#ped-historial > .ped-individual',ALL,gEt('ped-historial'))].map(el=>el.dataset.id);
+					IDs=[...SqS('#ped-historial > .ped-individual',ALL,gEt('ped-historial'))]
 				case 2:
 					download('libs/ped/export.php?IDs='+IDs,'pedidos.xlsx');
 					break;
@@ -1230,13 +997,7 @@ addEventListener('DOMContentLoaded',()=>{
 		
 	fetchPedidos(0);
 		
-	fetch('libs/hor/get.php')
-		.then(res=>res.json())
-		.then(res=>{
-			if(res.ok)
-				crearHorarios(...res.data);
-		});
-		
+	
 	//other events
 	
 	perfil.onkeydown=e=>{
@@ -1254,15 +1015,11 @@ addEventListener('DOMContentLoaded',()=>{
 				,this.numero
 				,this.color // index 2 es importante para el color
 				,this.descripcion
-				,this.pais
-				,this.provincia
-				,this.ciudad
-				,this.direccion
 				,this.minimoCompra
 			]
 			,image=SqS('[type="file"]',ONLY_ONE,this)
 			,backend='libs/update-profile.php'
-			,currentCoords=toLonLat(markerPoint.getCoordinates()),datos=gEt('reestablecer-map').dataset;
+			
 		
 		for(let input of inputs){
 			let trimmed=input.value.trim();
@@ -1276,10 +1033,7 @@ addEventListener('DOMContentLoaded',()=>{
 				changed[input.name]=trimmed;
 			input.disabled=true;
 		}
-		if(currentCoords
-			.map((el,i)=>el!=[datos.lon,datos.lat][i])
-				.reduce((ac,cu)=>ac||cu))
-			changed['coords']=currentCoords.join(',');
+		
 		
 		if(Object.keys(changed).length !== 0 || (image.files && image.files[0])){
 			
@@ -1317,18 +1071,12 @@ addEventListener('DOMContentLoaded',()=>{
 						input.disabled=false;
 					}
 					
-					if(changed.coords){
-						let resMap=gEt('reestablecer-map')
-						resMap.dataset.lon=currentCoords[0];
-						resMap.dataset.lat=currentCoords[1];
-					}
+					
 					
 					for(let id of[
 						'descripcion'
 						,'nombre'
-						,'ciudad'
-						,'provincia'
-						,'direccion'
+						
 					])
 						if(changed[id])
 							gEt(id).innerText=changed[id];

@@ -95,8 +95,7 @@ html, body{
 			#register .card > *{
 				margin:15px auto;}
 				
-#map{
-	height: 200px;}
+
 @media screen and (min-aspect-ratio: 13/9) {
 	.card{
 		width: 17%;
@@ -104,13 +103,11 @@ html, body{
 		#registerForm{
 			width: 35%;
 		}
-		#map{
-			width:30vw;}
+		
 }
 @media screen and (max-aspect-ratio: 13/9) {
 	.card{
 		width: 90%;
 	}
-		#map{
-			width:100%;}
+		
 }

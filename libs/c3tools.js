@@ -3,9 +3,11 @@
 const W=window,D=document,ALL=true,ONLY_ONE=false,OTHER=-1,NUMBER=0,STRING=1,ARRAY=2,OBJECT=3,BOOLEAN=4,NULL=5;
 var B;
 
+
 addEventListener('DOMContentLoaded',()=>{
 	B=D.body;
 });
+
 
 function is(variable,type){
 	if(variable==null && type==NULL)

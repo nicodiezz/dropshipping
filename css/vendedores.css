@@ -50,19 +50,7 @@ html,body{
 
 						color: var(--acento);
 					}
-					#horarios{
-						display:grid;grid-template-columns:repeat(7,1fr);
-						text-align:center;
-						background: var(--acento);
-						grid-area: c;
-						color: var(--color-principal);
-
-						padding: .5rem 1rem;
-						margin: -0.5rem;
-						margin-top: 0;
-					}
-						#horarios span {
-							white-space: nowrap;}
+					
 				#busqueda {
 					margin: auto 0;
 					padding: 10px;
@@ -228,10 +216,7 @@ html,body{
 					}
 					.resumen-item {
 						display: grid;grid-template-columns: auto 1fr auto;}
-						#resumen-item-delivery{
-							font-weight: bolder;
-							order: 1;
-						}
+						
 						.resumen-item > div:nth-child(2)::before {
 							content: '•';margin: 0 5px;}
 					#resumen-total{
@@ -278,8 +263,7 @@ html,body{
 @media screen and (min-aspect-ratio: 13/9) {
 	body{
 		width:50%;}
-		.horario-subspan {
-			display: inline !important;}
+		
 		.articulo{
 			height: 140px;
 			box-sizing: border-box;width:50%;}

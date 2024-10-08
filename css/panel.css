@@ -94,7 +94,7 @@ body, html {
 			position: absolute;top:0;height: 100%;
 			transition: background .3s,width 0s linear .3s;
 			display: grid;grid-template:"a" "b" 1fr;
-			z-index:1;/*Antes por .destacado , ahora por #map...*/
+			z-index:1;
 		}
 			.anvorgesa-abierta{
 				background: rgba(0,0,0,.3);
@@ -209,28 +209,7 @@ body, html {
 							margin: auto;}
 						#perfil-color > button{
 							height: 100%;padding: 0 .5rem;}
-				#horarios-holder{
-					display: grid;grid-template: "a b" "c c";}
-					#horarios{
-						grid-area:c;
-						display: grid;gap:.5rem;}
-						.horario > table{
-							width: 100%;}
-							.horario td{
-								text-align: center;}
-								.horario-horas{
-									display: flex;gap: 0.5rem;}
-								.horario-horas > *{
-									margin: auto;}
-									.horario-delete{
-										background: #FAA !important;
-										border:none;}
-										.horario-delete:hover{
-											background: #E88 !important;}
-					#reestablecer-map{
-						display: block;margin-top: 1rem !important;}
-					#map{
-						height: 200px;}
+				
 				#perfil-submit{
 					margin: 1rem auto !important;}
 			#articulos,#art-inicio{

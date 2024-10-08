@@ -17,7 +17,6 @@ $thisVendedor=$thisVendedor->fetch_assoc();
 $personalizacion=parse_ini_file('personalizacion.ini');
 $nombre=$personalizacion['nombre'];
 
-$horarios=$db->query("SELECT *,TIME_FORMAT(`desde`,'%H:%i') AS `desde`,TIME_FORMAT(`hasta`,'%H:%i') AS `hasta` FROM `pd_horarios` WHERE `vendedorID`=".$thisVendedor['ID']);
 
 ?>
 <!DOCTYPE html>
@@ -229,16 +228,12 @@ $horarios=$db->query("SELECT *,TIME_FORMAT(`desde`,'%H:%i') AS `desde`,TIME_FORM
 									vendedorID:VENDEDOR_ID
 									,nombre:campos[0]
 									,direccion:campos[1]
-									,delivery:!!+campos[3]
 									,items:[]
 								};
 								
-							let delivery;
+							
 							for(let item of items){
-								if(!+item.dataset.id){
-									delivery=item;
-									continue;
-								}
+								
 
 								let datos=[].map.call(item.children,e=>e.innerText);
 								mensaje+=' - '+datos[0]+' × '+datos[1]+' ($ '+datos[2]+')\n';
@@ -249,8 +244,7 @@ $horarios=$db->query("SELECT *,TIME_FORMAT(`desde`,'%H:%i') AS `desde`,TIME_FORM
 								
 								item.remove();
 							}
-							if(delivery)
-								mensaje+=` - Delivery ($ ${delivery.children[2].innerText})`;
+							
 							mensaje+='\n*Total: $'+suma.innerText+'*\n\nDirección de entrega: '+campos[1]+'\nForma de pago: '+campos[2]+'\n¡Muchas Gracias!';
 							open('https://wa.me/'+NÚMERO+'?text='+encodeURIComponent(mensaje));
 							
@@ -424,33 +418,7 @@ $horarios=$db->query("SELECT *,TIME_FORMAT(`desde`,'%H:%i') AS `desde`,TIME_FORM
 					gEt('changuito-'+info).value=gottenInfo;
 			}
 
-			gEt('changuito-retiro').onchange=function(){
-				if(this.value==1){
-					gEt('resumen-grandote-items').appendChild(createNode('DIV',{
-						class:'resumen-item'
-						,id:'resumen-item-delivery'
-						,children:[
-							'DIV'
-							,[
-								'DIV'
-								,{innerText:'Delivery'}
-							],
-							,[
-								'DIV'
-								,{
-									innerText:+this.dataset.value
-									,class:'precio'
-								}
-							]
-						]
-					}));
-				}else{
-					let deliveryElement=gEt('resumen-item-delivery')
-					if(deliveryElement)
-						deliveryElement.remove();
-				}
-
-			}
+			
 			
 		});
 		
@@ -462,36 +430,7 @@ $horarios=$db->query("SELECT *,TIME_FORMAT(`desde`,'%H:%i') AS `desde`,TIME_FORM
 		<h1><?=$thisVendedor['nombre']?></h1>
 		<input id="busqueda" data-previous="" type="text" placeholder="Escriba aquí para filtrar artículos">
 		<span id=search class="fas fa-magnifying-glass"></span>
-		<?php
-			if($horarios->num_rows){
-		?>
-		<div id="horarios">
-		<?php
-				while($horario=$horarios->fetch_assoc()){
-					echo '<span>Abierto de ';
-					$abierto=false;
-					$dias=['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
-					foreach($dias as $k=>$dia){
-						if(!$abierto && (int)$horario[$dia]){
-							echo ucwords($dia).' a ';
-							$abierto=true;
-						}elseif($abierto && !(int)$horario[$dia]){
-							echo ucwords($dias[$k-1])." de {$horario['desde']} a {$horario['hasta']}";
-							$abierto=false;
-							break;
-						}
-					}
-					if($abierto){
-						// TODO DRY
-						echo "Domingo de {$horario['desde']} a {$horario['hasta']}";
-					}
-					echo '.</span>';
-				}
-		?>
-		</div>
-		<?php
-			}
-		?>
+
 	</div>
 	<div id=content>
 <?php
@@ -638,11 +577,7 @@ foreach($otros as $art)
 					<input maxlength=40 id="changuito-nombre" placeholder="Nombre" required>
 					<input maxlength=60 id="changuito-domicilio" placeholder="Domicilio" required>
 					<input id="changuito-formaDePago" placeholder="Forma de Pago" required>
-					<select data-value="<?=$db->query("SELECT precio FROM pd_cambiosdelivery WHERE cuando<now() ORDER BY cuando DESC LIMIT 1")->fetch_assoc()['precio'] ||0?>" id="changuito-retiro">
-						<option value="">Forma de retiro</option>
-						<option value=1>Delivery</option>
-						<option value=0>Pick up</option>
-					</select>
+					
 				</div>
 				<h2>Datos del pedido</h2>
 				<div id="resumen-grandote-items"></div>

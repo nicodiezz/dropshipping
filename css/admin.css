@@ -31,7 +31,7 @@ html{
 					position: absolute;top:0;height: 100%;
 					transition: background .3s,width 0s linear .3s;
 					display: grid;grid-template:"a" "b" 1fr;
-					z-index:1;/*Antes por .destacado , ahora por #map...*/
+					z-index:1;
 				}
 					.anvorgesa-abierta{
 						background: rgba(0,0,0,.3);
@@ -241,9 +241,7 @@ html{
 							text-align: right;
 							width: 100%;
 						}
-						#cue-delivery-input{
-							width: 3rem;text-align: right;
-						}
+						
 						#cue button{
 							padding: 5px;}
 						#cue-pass{
