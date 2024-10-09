@@ -809,7 +809,7 @@ addEventListener('DOMContentLoaded',()=>{
 				let IDs=[];
 				switch(+res){
 				case 1:
-					IDs=[...SqS('#ped-historial > .ped-individual',ALL,gEt('ped-historial'))]
+					IDs=[...SqS('#ped-historial > .ped-individual',ALL,gEt('ped-historial'))].map(el=>el.dataset.id);
 				case 2:
 					download('libs/ped/export.php?IDs='+IDs,'pedidos.xlsx');
 					break;
