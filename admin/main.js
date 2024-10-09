@@ -1,7 +1,19 @@
 
 var pedidos={},request=0,reclamosPageNum=0,deletingCat;
 
-// function openScreen(screenID){} TODO ver que onda con esto
+function openScreen(screenID){
+	let prev=SqS('.selected');
+	if(prev){
+		prev.classList.remove('selected');
+	}
+	let opened=SqS('#realPanel > *:not(.notSelectedPanel)'),toOpen=gEt(screenID);
+	if(opened)
+		if(opened==toOpen)
+			return;
+		else opened.classList.add('notSelectedPanel');
+	toOpen.classList.remove('notSelectedPanel');
+	toOpen.classList.add('selected');
+}
 
 function pedirPedidos(vendedorID,from='',until=''){
 	addNode(gEt('ven-pedidos'),['SPAN',{
@@ -140,11 +152,12 @@ function lastMonthPeriod(){
 	return [todayExploded[0]+'-'+mes+'-'+todayExploded[2],today];
 }
 
-function abrirMenuCat(){
-	if(this.classList.contains('categoria-enProceso'))
+function abrirMenuGrupo(event){
+	event.stopPropagation();
+	if(this.classList.contains('grupo-enProceso'))
 		return;
-	let thisName=this.innerText;
-	showOptionsMessage('¿Qué desea hacer con la categoría "'+thisName+'"?'
+	let thisName=this.parentNode.childNodes[0].textContent.trim();
+	showOptionsMessage('¿Qué desea hacer con el grupo "'+thisName+'"?'
 		,['Editar',1]
 		,['Eliminar',2]
 		,['Cancelar',0]
@@ -152,7 +165,7 @@ function abrirMenuCat(){
 		.then(eleccion=>{
 			switch(+eleccion){
 			case 0:
-				this.classList.remove('categoria-enProceso');
+				this.classList.remove('grupo-enProceso');
 				break;
 			case 1:
 				let newName=prompt('Ingrese un nuevo nombre:',thisName);
@@ -161,7 +174,7 @@ function abrirMenuCat(){
 				sendJSON('libs/cat/edit.php',{newName,ID:this.dataset.id})
 					.then(res=>res.text())
 					.then(res=>{
-						this.classList.remove('categoria-enProceso');
+						this.classList.remove('grupo-enProceso');
 						if(+res)
 							this.innerText=newName;
 						else throw new Error('Backend answered with '+res);
@@ -173,17 +186,20 @@ function abrirMenuCat(){
 				break;
 			case 2:
 				if(!confirm('¿Seguro desea borrar la categoría '+thisName+'?\nEsta acción no se puede revertir.')){
-					this.classList.remove('categoria-enProceso');
+					this.classList.remove('grupo-enProceso');
 					return;
 				}
+
+
+				jaijajauheuh
 				let thisID=this.dataset.id
-				sendJSON('libs/cat/has-vends.php',{ID:thisID})
+				sendJSON('libs/grupos/has-vends.php',{ID:thisID})
 					.then(res=>res.text())
 					.then(cant=>{
 						if(+cant){
 							deletingCat=thisID;
 							selectOtherCat(cant);
-						}else sendJSON('libs/cat/delete.php',{ID:thisID,newID:0})
+						}else sendJSON('libs/grupos/delete.php',{ID:thisID,newID:0})
 							.then(res=>res.text())
 							.then(res=>{
 								if(+res)
@@ -191,13 +207,24 @@ function abrirMenuCat(){
 								else throw new Error('Backend answered with '+res);
 							})
 							.catch(e=>{
-								this.classList.remove('categoria-enProceso');
+								this.classList.remove('grupo-enProceso');
 								console.log(e);
 							});
 					});
 				break;
 			}
 		})
+}
+function abrirGrupo() {
+	openScreen('grupo');
+	let grupo=gEt('grupo');
+	sendJSON('libs/grupos/get.php',{id:grupo.dataset.id}).then(
+		res=>res.json()
+	).then(
+		data=>{
+			SqS('h1',1,grupo).innerText=data.nombre
+		}
+	);
 }
 
 function selectOtherCat(cantidad){
@@ -280,7 +307,7 @@ addEventListener('DOMContentLoaded',()=>{
 				screenID='ven';
 				break;
 			case 2:
-				screenID='cat';
+				screenID='grupos';
 				break;
 			case 3:
 				screenID='rec';
@@ -289,18 +316,7 @@ addEventListener('DOMContentLoaded',()=>{
 				screenID='cue';
 				break;
 			}
-			let prev=SqS('.selected');
-			if(prev){
-				prev.classList.remove('selected');
-			}
-			classList.add('selected');
-			let opened=SqS('#realPanel > *:not(.notSelectedPanel)'),toOpen=gEt(screenID);
-			if(opened)
-				if(opened==toOpen)
-					return;
-				else opened.classList.add('notSelectedPanel');
-			toOpen.classList.remove('notSelectedPanel');
-			
+			openScreen(screenID);
 			this.classList.remove('anvorgesa-abierta');
 		}
 	}
@@ -434,26 +450,29 @@ addEventListener('DOMContentLoaded',()=>{
 		}
 	};
 	
-	gEt('cat-add').onclick=()=>{
-		let nuevoNombre=prompt('Ingrese el nombre de la nueva categoría.');
+	gEt('grupo-add').onclick=()=>{
+		let nuevoNombre=prompt('Ingrese el nombre del nuevo grupo.');
+		let comision=prompt('Ingrese la comision del nuevo grupo.');
+		
 		if(nuevoNombre && (nuevoNombre=nuevoNombre.trim())){
-			let newCat=gEt('cat-container').appendChild(createNode('DIV',{
-				classList:['categoria','categoria-enProceso']
+			let newGrupo=createNode('DIV',{
+				classList:['grupo','grupo-enProceso']
 				,innerText:nuevoNombre
-				,onclick:abrirMenuCat
-			}));
-			sendJSON('libs/cat/add.php',{nuevoNombre})
+				,onclick:abrirGrupo
+			});
+			gEt('grupos-container').appendChild(newGrupo);
+			sendJSON('libs/grupos/add.php',{nombre:nuevoNombre,comision:comision})
 				.then(res=>res.text())
 				.then(res=>{
 					if(+res){
-						newCat.classList.remove('categoria-enProceso');
-						newCat.dataset.id=res;
-						showMessage('La categoría se ha creado satisfactoriamente.','limegreen');
+						newGrupo.classList.remove('grupo-enProceso');
+						newGrupo.dataset.id=res;
+						showMessage('El grupo se ha creado satisfactoriamente.','limegreen');
 					}else throw new Error('Backend answered with '+res);
 				})
 				.catch(e=>{
 					console.log(e);
-					newCat.remove();
+					newGrupo.remove();
 					showMessage('Ha ocurrido un error, intente más tarde.\nSi este error le ocurre seguido, contacte al soporte.','red');
 				});
 		}
@@ -472,7 +491,7 @@ addEventListener('DOMContentLoaded',()=>{
 		gEt('cat-hasVends').style.display='none';
 		if(+target.value){
 			let categoriaToKill=SqS('.categoria[data-id="'+deletingCat+'"]');
-			categoriaToKill.classList.add('categoria-enProceso');
+			categoriaToKill.classList.add('grupo-enProceso');
 			sendJSON('libs/cat/delete.php',{ID:deletingCat,newID:this.previousElementSibling.value})
 				.then(res=>res.text())
 				.then(res=>{
@@ -481,7 +500,7 @@ addEventListener('DOMContentLoaded',()=>{
 					else throw new Error('Backend answered with '+res);
 				})
 				.catch(e=>{
-					categoriaToKill.classList.remove('categoria-enProceso');
+					categoriaToKill.classList.remove('grupo-enProceso');
 					console.log(e);
 					showMessage('Ha ocurrido un error, intente de nuevo más tarde.\nSi ocurre seguido, contacte con el soporte.','red');
 				});
@@ -532,19 +551,28 @@ addEventListener('DOMContentLoaded',()=>{
 	
 	cargarMasReclamos();
 	
-	fetch('libs/cat/get.php')
+	fetch('libs/grupos/get-all.php')
 		.then(res=>res.json())
-		.then(cats=>{
-			if(cats.length){
-				let container=gEt('cat-container');
-				for(let cat of cats){
-					container.appendChild(createNode('DIV',{
-						class:'categoria'
-						,innerText:cat['nombre']
-						,onclick:abrirMenuCat
-						,dataset:{id:cat['ID']}
+		.then(grupos=>{
+			let container=gEt('grupos-container');
+			if(grupos.length){
+				for(let grupo of grupos){
+					let grupo_div = createNode('DIV',{
+						class:'grupo'
+						,innerText:grupo['nombre']
+						,onclick:abrirGrupo
+						,dataset:{id:grupo['ID']}
+					});
+					grupo_div.appendChild(createNode('BUTTON',{
+						class:"grupo-edit",
+						onclick:abrirMenuGrupo,
+						innerText:'⋮',
+						dataset:{id:grupo['ID']}
 					}));
+					container.appendChild(grupo_div);
 				}
+			}else{
+				container.innerHTML='<p>No existen grupos de artículos aún.</p>';
 			}
 		})
 	

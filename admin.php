@@ -46,7 +46,7 @@ $nombre=$personalizacion['nombre'];
 			</button>
 			<button class="action" value=2>
 				<i class="fa fa-list"></i>
-				<span>Categorías</span>
+				<span>Grupos</span>
 			</button>
 			<button class="action" value=3>
 				<i class="fa fa-file-invoice"></i>
@@ -81,10 +81,15 @@ $nombre=$personalizacion['nombre'];
 			</div>
 			<div id=ven-pedidos></div>
 		</div>
-
-		<div id="cat" class=notSelectedPanel>
-			<button id="cat-add">Añadir</button>
-			<div id="cat-container"></div>
+		
+		<div id="grupos" class=notSelectedPanel>
+			<button id="grupo-add">Añadir</button>
+			<div id="grupos-container">
+			</div>
+		</div>
+		<div id="grupo" class=notSelectedPanel>
+			<h1> Titulo </h1>
+			<input type="text" placeholder="Escribe para filtar artículos">
 		</div>
 
 		<div id="rec" class=notSelectedPanel>
@@ -101,13 +106,12 @@ $nombre=$personalizacion['nombre'];
 		</div>
 
 	</div>
-	<div id="cat-hasVends">
-		<div id="cat-hasVends-body">
-			<span>Se han encontrado <span id="cat-hasVends-body-cuantos"></span> en esa categoría.</span>
-			<span>¿Dónde desea moverlos al eliminarla?</span>
-			<select id="cat-hasVends-body-select"></select>
-			<div id="cat-hasVends-body-buttons">
-				<button value=1>Elegir</button>
+	<div id="grupo-hasVends">
+		<div id="grupo-hasVends-body">
+			<span>Se han encontrado <span id="grupo-hasVends-body-cuantos"></span> en ese grupo.</span>
+			<span>¿Cómo desea continuar?</span>
+			<div id="grupo-hasVends-body-buttons">
+				<button value=1>Eliminar de todos modos</button>
 				<button value=0>Cancelar</button>
 			</div>
 		</div>
