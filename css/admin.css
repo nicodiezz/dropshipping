@@ -88,9 +88,7 @@ html{
 								}
 								.action > span{
 									margin: auto 0;}
-					.selected{
-						background: #DDD;}
-
+					
 		/* #realPanel{
 		} */
 
@@ -121,8 +119,6 @@ html{
 					width: 100%;}
 					#bar > button:not(#salir){
 						border-right: solid gray 2px;}
-						.selected{
-							background: lightgray;}
 					#salir{
 						background-color: #FAA;
 					}
@@ -247,6 +243,7 @@ html{
 						#cue-pass{
 							margin: .5rem auto !important;
 						}
+/* 			ELIMINAR 		*/
 				/* * #cat{} */
 					#cat-add{
 						margin: 15px auto !important;display: block;
@@ -284,6 +281,44 @@ html{
 					width: min-content;margin: auto;}
 				#cat-hasVends-body-buttons{
 					display: flex;justify-content: space-evenly;}
+/* ---------------------------- */
+				/* * #cat{} */
+				#grupo-add{
+					margin: 15px auto !important;display: block;
+					padding: 5px;}
+					#grupo-container{
+						display: flex;justify-content: space-evenly;flex-wrap: wrap;}
+						.grupo {
+							margin: 10px 0;
+							text-align: center;
+							padding: 20px;box-sizing: border-box;
+							border: solid;border-radius: 10px;
+							cursor: pointer;
+							font-weight: bold;font-size: larger;
+							background:#EEE;
+						}
+							.grupo:hover{
+								background:lightgray;
+							}
+					
+	#grupo-hasVends{
+		position:fixed;top: 0;left: 0;
+		display:none;
+		height: 100%;width: 100%;
+		background:rgba(0,0,0,.5);
+		z-index:1000;}
+		#grupo-hasVends-body{
+			margin: auto;
+			background: white;
+			border:solid;border-radius: 10px;
+			max-width: 80%;
+			text-align: center;
+			display: grid;gap:15px;
+			padding: 15px;}
+			#grupo-hasVends-body-select{
+				width: min-content;margin: auto;}
+			#grupo-hasVends-body-buttons{
+				display: flex;justify-content: space-evenly;}
 @media screen and (min-aspect-ratio: 13/9) {
 	body{
 		width:80%;height: 100%;
@@ -311,7 +346,11 @@ html{
 			#cue{
 				width: max-content;margin: auto;
 			}
+			/*eliminar*/
 			.categoria{
+				width: 30%;}
+			/*----*/
+			.grupo{
 				width: 30%;}
 			#rec > div{
 				width: 60%;
