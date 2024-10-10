@@ -1,5 +1,5 @@
 
-var pedidos={},request=0,reclamosPageNum=0,deletingCat;
+var pedidos={},request=0,reclamosPageNum=0,deletingGrupo;
 
 function openScreen(screenID){
 	let prev=SqS('.selected');
@@ -185,32 +185,36 @@ function abrirMenuGrupo(event){
 					});
 				break;
 			case 2:
-				if(!confirm('¿Seguro desea borrar la categoría '+thisName+'?\nEsta acción no se puede revertir.')){
+				if(!confirm('¿Seguro desea eliminar el grupo '+thisName+'?\nEsta acción no se puede revertir.')){
 					this.classList.remove('grupo-enProceso');
 					return;
 				}
-
-
-				jaijajauheuh
 				let thisID=this.dataset.id
-				sendJSON('libs/grupos/has-vends.php',{ID:thisID})
+				sendJSON('libs/grupos/has-arts.php',{ID:thisID})
 					.then(res=>res.text())
 					.then(cant=>{
 						if(+cant){
-							deletingCat=thisID;
-							selectOtherCat(cant);
-						}else sendJSON('libs/grupos/delete.php',{ID:thisID,newID:0})
+							let terminacion
+							showMessage('No se puede eliminar el grupo '+thisName+' ya que contiene '+cant+(cant==1?'artículo':'artículos'));
+						}else sendJSON('libs/grupos/has-vends.php',{ID:thisID})
 							.then(res=>res.text())
-							.then(res=>{
-								if(+res)
-									this.remove();
-								else throw new Error('Backend answered with '+res);
-							})
+							.then(cant=>{
+								if(+cant){
+									gEt('grupo-hasVends-body-cuantos').innerText=cant+' vendedor'+(cant==1?'':'es');
+									gEt('grupo-hasVends').style.display='flex';
+									deletingGrupo=thisID;
+								}else sendJSON('libs/grupos/delete.php',{ID:thisID,newID:0})
+									.then(res=>res.text())
+									.then(res=>{
+										if(+res)
+											this.remove();
+										else throw new Error('Backend answered with '+res);
+									})
 							.catch(e=>{
 								this.classList.remove('grupo-enProceso');
 								console.log(e);
 							});
-					});
+					})});
 				break;
 			}
 		})
@@ -225,23 +229,6 @@ function abrirGrupo() {
 			SqS('h1',1,grupo).innerText=data.nombre
 		}
 	);
-}
-
-function selectOtherCat(cantidad){
-	let holder=D.createDocumentFragment();
-	for(let el of [...SqS('.categoria',ALL)]){
-		if(el.dataset.id==deletingCat)
-			continue;
-		holder.appendChild(createNode('OPTION',{
-			value:el.dataset.id
-			,innerText:el.innerText
-		}));
-	}
-	let select=gEt('cat-hasVends-body-select');
-	select.innerHTML='';
-	select.appendChild(holder);
-	gEt('cat-hasVends-body-cuantos').innerText=cantidad+' vendedor'+(cantidad==1?'':'es');
-	gEt('cat-hasVends').style.display='flex';
 }
 
 function search(queryString){
@@ -478,34 +465,34 @@ addEventListener('DOMContentLoaded',()=>{
 		}
 	}
 	
-	gEt('cat-hasVends').onclick=function(e){
+	gEt('grupo-hasVends').onclick=function(e){
 		if(e.target==this)
 			this.firstElementChild.lastElementChild.lastElementChild.click();//cancelar button
 	}
 	
-	gEt('cat-hasVends-body-buttons').onclick=function(e){
+	gEt('grupo-hasVends-body-buttons').onclick=function(e){
 		let target=e.target;
 		if(target==this)
 			return;
 		
-		gEt('cat-hasVends').style.display='none';
+		gEt('grupo-hasVends').style.display='none';
 		if(+target.value){
-			let categoriaToKill=SqS('.categoria[data-id="'+deletingCat+'"]');
-			categoriaToKill.classList.add('grupo-enProceso');
-			sendJSON('libs/cat/delete.php',{ID:deletingCat,newID:this.previousElementSibling.value})
+			let grupoToKill=SqS('.grupo[data-id="'+deletingGrupo+'"]');
+			grupoToKill.classList.add('grupo-enProceso');
+			sendJSON('libs/grupos/delete.php',{ID:deletingGrupo})
 				.then(res=>res.text())
 				.then(res=>{
 					if(+res)
-						categoriaToKill.remove();
+						grupoToKill.remove();
 					else throw new Error('Backend answered with '+res);
 				})
 				.catch(e=>{
-					categoriaToKill.classList.remove('grupo-enProceso');
+					grupoToKill.classList.remove('grupo-enProceso');
 					console.log(e);
 					showMessage('Ha ocurrido un error, intente de nuevo más tarde.\nSi ocurre seguido, contacte con el soporte.','red');
 				});
 		}
-		deletingCat=null;
+		deletingGrupo=null;
 	}
 	
 	let listFilter=gEt('ven-list-filter')
