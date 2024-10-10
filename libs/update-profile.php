@@ -38,22 +38,12 @@ if(isset($data['color'])){
 	$datosAdicionales['cambiarColor']=true;
 }
 
-if(isset($data['coords'])){
-	$coords=array_map(function($coord){return (float)$coord;},explode(',',$data['coords']));
-	$sets[]='`lon`='.$coords[0].',`lat`='.$coords[1];
-	$_SESSION['lon']=$coords[0];
-	$_SESSION['lat']=$coords[1];
-	
-}
+
 
 //simple
 foreach([
 	'descripcion'
-	,'pais'
 	,'numero'
-	,'provincia'
-	,'ciudad'
-	,'direccion'
 	,'minimoCompra'
 ] as $attr)
 	if(isset($data[$attr])){

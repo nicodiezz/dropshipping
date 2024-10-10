@@ -19,124 +19,18 @@
 	<link rel="stylesheet" href="/css/variables.css">
 	<link rel="stylesheet" href="/login/main.css">
 	
-	<link rel="stylesheet" href="/libs/OpenLayers/ol.css">
-	<script src="/libs/OpenLayers/ol.js"></script>
 	
+	
+
 	<script src="/libs/c3tools.js"></script>
 	<script >
-		var requestNro=0;
 		
-		// map "var"s
-		var map
-			,fromLonLat=ol.proj.fromLonLat
-			,toLonLat=ol.proj.toLonLat
-			,PointerInteraction=ol.interaction.Pointer
-			,Drag =(function (PointerInteraction) {
-				function Drag() {
-					PointerInteraction.call(this, {
-						handleDownEvent: function(evt) {
-							let map = evt.map,
-								feature = map.forEachFeatureAtPixel(evt.pixel,feature=>feature);
-							if (feature) {
-								this.coordinate_ = evt.coordinate;
-								this.feature_ = feature;
-							}
-							return !!feature;
-						},
-						handleDragEvent: function(evt) {
-							let deltaX = evt.coordinate[0] - this.coordinate_[0]
-								,deltaY = evt.coordinate[1] - this.coordinate_[1]
-								,geometry = this.feature_.getGeometry();
-								
-							geometry.translate(deltaX, deltaY);
-							
-							this.coordinate_[0] = evt.coordinate[0];
-							this.coordinate_[1] = evt.coordinate[1];
-						},
-						handleMoveEvent: function (evt) {
-							if (this.cursor_) {
-								let map = evt.map
-									,feature = map.forEachFeatureAtPixel(evt.pixel,feature=> feature)
-									,element = evt.map.getTargetElement();
-								if (feature) {
-									if (element.style.cursor != this.cursor_) {
-										this.previousCursor_ = element.style.cursor;
-										element.style.cursor = this.cursor_;
-									}
-								} else if (this.previousCursor_ !== undefined) {
-									element.style.cursor = this.previousCursor_;
-									this.previousCursor_ = undefined;
-								}
-							}
-						},
-						handleUpEvent: function () {
-							let coords=toLonLat(markerPoint.getCoordinates());
-							fillPlaceFields([coords[1],coords[0]]);
-							this.coordinate_ = null;
-							this.feature_ = null;
-							return false;
-						}
-					});
-					this.coordinate_ = null;
-					this.cursor_ = 'pointer';
-					this.feature_ = null;
-					this.previousCursor_ = undefined;
-				}
-				if ( PointerInteraction )
-					Drag.__proto__ = PointerInteraction;
-				Drag.prototype = Object.create( PointerInteraction && PointerInteraction.prototype );
-				Drag.prototype.constructor = Drag;
-				return Drag;
-			}(PointerInteraction))
-			
-			,markerPoint=new ol.geom.Point([0, 0])
-			,fill=new ol.style.Fill({
-				color: 'rgba(255,255,255,0.3)'
-			})
-			,stroke=new ol.style.Stroke({
-				color: '#56E48E',
-				width: 2
-			});
-	
-		//funs
 		
-		function pointMapTo(coords,zoom){
-			coords=fromLonLat(coords);
-			markerPoint.setCoordinates(coords);
-			map.getView().setCenter(coords);
-			map.getView().setZoom(zoom);
-		}
 	
 		function setFormDisabled(boolean){
 			gEt('loading').style.display=boolean?'flex':'none';
 			for(let input of SqS('input, button',ALL))
 				input.disabled=boolean;
-		}
-		
-		function fillPlaceFields(coords){
-			let thisRequest=++requestNro;
-			fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+coords[0]+'&lon='+coords[1]+'&zoom=10')
-				.then(res=>{
-					if(thisRequest==requestNro)
-						return res.json()
-				})
-				.then(city=>{
-					if(thisRequest==requestNro){
-						if(city.error)
-							city.address={
-								country:''
-								,state:''
-								,city:''
-							}
-						let current;
-						for(let part of [
-							['pais','country']
-							,['provincia','state']
-						])
-							gEt(part[0]).value=city.address[part[1]]||'';
-						gEt('ciudad').value=city.address['city']||city.address['town']||'';
-					}
-				});
 		}
 		
 		function haOcurridoUnErrorInesperado(error){
@@ -170,11 +64,6 @@
 					type:'button'
 					,innerText:'Registrarse'
 					,onclick:()=>{
-						navigator.geolocation.getCurrentPosition(result=>{
-							pointMapTo([+result.coords.longitude,+result.coords.latitude],15);
-							fillPlaceFields([result.coords.latitude,result.coords.longitude]);
-							gEt('map').style.display='block';
-						},null,{enableHighAccuracy: true});
 						gEt('register').style.display='flex';
 					}
 				}]
@@ -183,82 +72,11 @@
 		
 		addEventListener('DOMContentLoaded',()=>{
 			
-			// map stuff
-			
-			map = new ol.Map({
-				interactions: ol.interaction.defaults().extend([new Drag()]),
-				layers: [
-					new ol.layer.Tile({
-						source: new ol.source.OSM()
-					})
-					,new ol.layer.Vector({
-						source: new ol.source.Vector({
-							features: [new ol.Feature({
-								type: 'geoMarker',
-								geometry: markerPoint
-							})]
-						})
-						,style: new ol.style.Style({
-							image: new ol.style.Circle({
-								fill:fill
-								,stroke:stroke
-								,radius:8
-							})
-							,fill:fill
-							,stroke:stroke
-						})
-					})
-				],
-				target: 'map',
-				view: new ol.View({
-					center: [0, 0],
-					zoom: 2
-				})
-			});
-
-			[...SqS('.over',ALL),gEt('map')].map(el=>el.style.display='none');
+			[...SqS('.over',ALL)].map(el=>el.style.display='none');
 			
 			gEt('loading').classList.remove('loading-initial');
 			
-			// end of map stuff
-			
-			//events
-			
-			SqS('button',ONLY_ONE,gEt('searchDiv')).onclick=()=>{
-				this.disabled=true;
-				let wholeMap=gEt('map');
-				fetch('https://nominatim.openstreetmap.org/search?city='+decodeURIComponent(gEt('ciudad').value)+'&country='+decodeURIComponent(gEt('pais').value)+'&format=json')
-					.then(response=>response.json())
-					.then(places=>{
-						let results=gEt('citySelection');
-						if(places.length){
-							results.innerText='Elegí tu ciudad de la siguiente lista:';
-							let setThis=function(){
-								pointMapTo(this.value.split(','),12);
-								let nombres=this.innerText.split(',').map(v=>v.trim()),penultimo=nombres[nombres.length-2];
-								gEt('pais').value=nombres[nombres.length-1];
-								gEt('provincia').value=/[^A-Z-0-9]/.test(penultimo)?penultimo:nombres[nombres.length-3];
-								gEt('ciudad').value=nombres[0];
-							}
-							for(let city of places){
-								if(city.place_id==236449628)
-									continue;
-								let cityButton=D.createElement('BUTTON');
-								cityButton.innerText=city.display_name;
-								cityButton.value=city.lon+","+city.lat;
-								cityButton.onclick=setThis;
-								cityButton.type='button';
-								results.appendChild(cityButton);
-							}
-						}else results.innerText='No se ha encontrado ninguna ciudad, revise los datos e intente nuevamente.';
-					})
-					.catch(()=>alert('Lo sentimos, a ocurrido un error. Refresque la página y vuelva a intentarlo.'))
-				//.then(/*fill citySelection*/)
-					.finally(()=>this.disabled=false);//check documentation
-				wholeMap.style.display='block';
-			}
-			
-			//forms
+			////forms
 			
 			D.forms.contenedor.onsubmit=function(){
 				setFormDisabled(true);
@@ -304,16 +122,6 @@
 						this.categoriaNueva.value
 						:this.categoria.value
 					)
-					,ciudad:this.ciudad.value
-					,direccion:this.direccion.value
-					,provincia:this.provincia.value
-					,pais:this.pais.value
-				}
-					,vendLocation=toLonLat(markerPoint.getCoordinates());
-				if(!vendLocation.reduce((e,ne)=>e&&ne)){
-					alert('Elija sus coordenadas');
-					setFormDisabled(false);
-					return false;
 				}
 				for(let key in data){
 					data[key]=data[key].trim();
@@ -323,7 +131,6 @@
 						return false;
 					}
 				}
-				data.location=vendLocation.join(',');
 				if(data.categoria)
 					sendJSON('libs/register.php',data)
 						.then(r=>r.text())
@@ -411,23 +218,11 @@ else echo '			crearLogin();';
 require 'libs/db.php';
 
 $options=$db->query("SELECT * FROM `pd_categorias`");
-while($option=$options->fetch_assoc())
+while($option=$options->fetch_assoc()){
 echo "<option value={$option['ID']}>{$option['nombre']}</option>";
-
+}
 ?>
 				</select></label>
-				<div id=searchDiv>
-					<div>
-						<input type="text" name=pais id=pais placeholder="Pais" required>
-						<input type="text" name=provincia id=provincia placeholder="Provincia" required>
-						<input type="text" name=ciudad id=ciudad placeholder="Ciudad" required>
-					</div>
-					<button type="button" id="searchCity">Buscar</button>
-				</div>
-				<input type="text" name=direccion placeholder="Dirección" style="width:70%" required>
-				<div id="citySelection"></div>
-			<!-- </fieldset> -->
-			<div id="map"></div>
 			<input type="submit" value="Registrarme">
 		</form>
 	</div>

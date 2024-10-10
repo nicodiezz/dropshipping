@@ -3,7 +3,6 @@ $data=json_decode(file_get_contents('php://input'),true);
 $data['vendedorID']=(int)$data['vendedorID'];
 $data['nombre']=trim($data['nombre']);
 $data['direccion']=trim($data['direccion']);
-$data['delivery']=(int)$data['delivery'];
 
 if(
 	!(
@@ -16,7 +15,7 @@ if(
 	require $_SERVER['DOCUMENT_ROOT'].'/libs/header-location.php';
 
 require 'db.php';
-$db->prepared("INSERT INTO `pd_pedidos_metadatos` (`vendedorID`,`nombre`,`direccion`,`delivery`) VALUES ({$data['vendedorID']},?,?,{$data['delivery']})",'ss',[$data['nombre'],$data['direccion']]);
+$db->prepared("INSERT INTO `pd_pedidos_metadatos` (`vendedorID`,`nombre`,`direccion`) VALUES (?,?,?)",'iss',[$data['vendedorID'],$data['nombre'],$data['direccion']]);
 $pedidoID=$db->insert_id();
 $query='INSERT INTO `pd_pedidos_articulos` (`pedidoID`,`articuloID`,`cantidad`) VALUES ';
 foreach($data['items'] as $key=>$item){

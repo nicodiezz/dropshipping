@@ -98,12 +98,6 @@ $nombre=$personalizacion['nombre'];
 			</div>
 			
 			<button id="cue-pass">Cambiar contraseña</button>
-
-			<p>Valor del delivery:</p>
-			<div id="cue-delivery">
-				<input type=number value="<?=(float)$db->query("SELECT precio FROM pd_cambiosdelivery WHERE cuando<now() ORDER BY cuando DESC LIMIT 1")->fetch_assoc()['precio']?>" id="cue-delivery-input">
-				<button id="cue-delivery-update">Actualizar</button>
-			</div>
 		</div>
 
 	</div>

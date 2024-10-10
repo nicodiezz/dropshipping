@@ -116,9 +116,6 @@ $nombre=$personalizacion['nombre'];
 			<h1><?=$thisVendedor['nombre']?></h1>
 			<div>
 				<span><?=$thisVendedor['descripcion']?></span>
-				<br>
-				<br>
-				<span>Dirección: <?=$thisVendedor['ciudad'].', '.$thisVendedor['provincia'].'; '.$thisVendedor['direccion']?></span>
 			</div>
 		</div>
 	</div>

@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.5
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
--- Servidor: localhost
--- Tiempo de generación: 05-03-2022 a las 17:22:49
--- Versión del servidor: 5.7.35-log
--- Versión de PHP: 5.6.40
+-- Servidor: 127.0.0.1:3306
+-- Tiempo de generación: 26-09-2024 a las 20:57:34
+-- Versión del servidor: 8.0.39
+-- Versión de PHP: 8.0.26
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -19,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `c2020493_alc`
+-- Base de datos: `dropshippingnueva`
 --
 
 -- --------------------------------------------------------
@@ -28,21 +27,23 @@ SET time_zone = "+00:00";
 -- Estructura de tabla para la tabla `pd_admins`
 --
 
-CREATE TABLE `pd_admins` (
-  `ID` int(11) NOT NULL,
-  `usuario` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `contraseña` char(60) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `nombre` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `habilitado` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+DROP TABLE IF EXISTS `pd_admins`;
+CREATE TABLE IF NOT EXISTS `pd_admins` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `usuario` varchar(80) NOT NULL,
+  `contraseña` char(60) NOT NULL,
+  `nombre` varchar(80) NOT NULL,
+  `habilitado` tinyint NOT NULL,
+  `color` int NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `pd_admins`
 --
 
-INSERT INTO `pd_admins` (`ID`, `usuario`, `contraseña`, `nombre`, `habilitado`) VALUES
-(1, 'admin', '$2y$10$5O0cGMgp2xB6em2hKn8/Memrh3ID2Jn.GJBzGxUNoXYcbl6iAf9xG', 'Cuenta de Administración Principal', 1);
--- Contraseña: asd
+INSERT INTO `pd_admins` (`ID`, `usuario`, `contraseña`, `nombre`, `habilitado`, `color`) VALUES
+(1, 'admin', '$2y$10$5O0cGMgp2xB6em2hKn8/Memrh3ID2Jn.GJBzGxUNoXYcbl6iAf9xG', 'Cuenta de Administración Principal', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -50,29 +51,22 @@ INSERT INTO `pd_admins` (`ID`, `usuario`, `contraseña`, `nombre`, `habilitado`)
 -- Estructura de tabla para la tabla `pd_articulos`
 --
 
-CREATE TABLE `pd_articulos` (
-  `ID` int(11) NOT NULL,
-  `nombre` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `descripcion` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
+DROP TABLE IF EXISTS `pd_articulos`;
+CREATE TABLE IF NOT EXISTS `pd_articulos` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` varchar(1000) NOT NULL,
   `precio` decimal(15,2) NOT NULL,
-  `vendedorID` int(11) NOT NULL,
-  `seccionID` int(11) NOT NULL DEFAULT '0',
-  `codigo_de_barras` bigint(13) UNSIGNED NOT NULL,
-  `disponible` tinyint(4) NOT NULL DEFAULT '1',
-  `ext_de_img` varchar(5) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
-  `destacado` tinyint(1) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pd_cambiosdelivery`
---
-
-CREATE TABLE `pd_cambiosdelivery` (
-  `cuando` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `precio` decimal(15,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `grupoID` int NOT NULL,
+  `codigo_de_barras` bigint UNSIGNED NOT NULL,
+  `disponible` tinyint NOT NULL DEFAULT '1',
+  `ext_de_img` varchar(5) DEFAULT NULL,
+  `destacado` tinyint NOT NULL,
+  `seccionID` int NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `pd_articulos_grupoid_foreign` (`grupoID`),
+  KEY `pd_articulos_seccionid_foreign` (`seccionID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -80,43 +74,28 @@ CREATE TABLE `pd_cambiosdelivery` (
 -- Estructura de tabla para la tabla `pd_cambiosdeprecio`
 --
 
-CREATE TABLE `pd_cambiosdeprecio` (
-  `ID` int(11) NOT NULL,
-  `articuloID` int(11) NOT NULL,
-  `cuando` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `nuevoPrecio` decimal(15,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;
+DROP TABLE IF EXISTS `pd_cambiosdeprecio`;
+CREATE TABLE IF NOT EXISTS `pd_cambiosdeprecio` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `articuloID` int NOT NULL,
+  `cuando` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `nuevoPrecio` decimal(15,2) NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `pd_cambiosdeprecio_articuloid_foreign` (`articuloID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `pd_categorias`
+-- Estructura de tabla para la tabla `pd_grupos`
 --
 
-CREATE TABLE `pd_categorias` (
-  `ID` int(11) NOT NULL,
-  `nombre` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pd_horarios`
---
-
-CREATE TABLE `pd_horarios` (
-  `ID` int(11) NOT NULL,
-  `vendedorID` int(11) NOT NULL,
-  `desde` time DEFAULT NULL,
-  `hasta` time DEFAULT NULL,
-  `lunes` tinyint(1) NOT NULL DEFAULT '0',
-  `martes` tinyint(1) NOT NULL DEFAULT '0',
-  `miercoles` tinyint(1) NOT NULL DEFAULT '0',
-  `jueves` tinyint(1) NOT NULL DEFAULT '0',
-  `viernes` tinyint(1) NOT NULL DEFAULT '0',
-  `sabado` tinyint(1) NOT NULL DEFAULT '0',
-  `domingo` tinyint(1) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+DROP TABLE IF EXISTS `pd_grupos`;
+CREATE TABLE IF NOT EXISTS `pd_grupos` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(50) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -124,12 +103,16 @@ CREATE TABLE `pd_horarios` (
 -- Estructura de tabla para la tabla `pd_pedidos_articulos`
 --
 
-CREATE TABLE `pd_pedidos_articulos` (
-  `ID` int(11) NOT NULL,
-  `pedidoID` int(11) NOT NULL,
-  `articuloID` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;
+DROP TABLE IF EXISTS `pd_pedidos_articulos`;
+CREATE TABLE IF NOT EXISTS `pd_pedidos_articulos` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `pedidoID` int NOT NULL,
+  `articuloID` int NOT NULL,
+  `cantidad` int NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `pd_pedidos_articulos_articuloid_foreign` (`articuloID`),
+  KEY `pd_pedidos_articulos_pedidoid_foreign` (`pedidoID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -137,15 +120,17 @@ CREATE TABLE `pd_pedidos_articulos` (
 -- Estructura de tabla para la tabla `pd_pedidos_metadatos`
 --
 
-CREATE TABLE `pd_pedidos_metadatos` (
-  `ID` int(11) NOT NULL,
-  `vendedorID` int(11) NOT NULL,
+DROP TABLE IF EXISTS `pd_pedidos_metadatos`;
+CREATE TABLE IF NOT EXISTS `pd_pedidos_metadatos` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `vendedorID` int NOT NULL,
   `cuando` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `nombre` varchar(40) COLLATE utf8mb4_bin NOT NULL,
-  `direccion` varchar(60) COLLATE utf8mb4_bin NOT NULL,
-  `concretado` int(11) NOT NULL DEFAULT '2',
-  `delivery` tinyint(1) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+  `nombre` varchar(40) NOT NULL,
+  `direccion` varchar(60) NOT NULL,
+  `concretado` int NOT NULL DEFAULT '2',
+  PRIMARY KEY (`ID`),
+  KEY `pd_pedidos_metadatos_vendedorid_foreign` (`vendedorID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -153,12 +138,14 @@ CREATE TABLE `pd_pedidos_metadatos` (
 -- Estructura de tabla para la tabla `pd_reclamos`
 --
 
-CREATE TABLE `pd_reclamos` (
-  `ID` int(11) NOT NULL,
+DROP TABLE IF EXISTS `pd_reclamos`;
+CREATE TABLE IF NOT EXISTS `pd_reclamos` (
+  `ID` int NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
-  `objeto` int(11) NOT NULL,
-  `reclamo` varchar(700) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+  `objeto` int NOT NULL,
+  `reclamo` varchar(700) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -166,13 +153,17 @@ CREATE TABLE `pd_reclamos` (
 -- Estructura de tabla para la tabla `pd_secciones`
 --
 
-CREATE TABLE `pd_secciones` (
-  `ID` int(11) NOT NULL,
-  `nombre` varchar(50) COLLATE utf8mb4_spanish_ci NOT NULL,
-  `descripcion` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
-  `vendedorID` int(11) NOT NULL,
-  `parentID` int(11) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
+DROP TABLE IF EXISTS `pd_secciones`;
+CREATE TABLE IF NOT EXISTS `pd_secciones` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(50) NOT NULL,
+  `descripcion` varchar(200) DEFAULT 'DEFAULT NULL',
+  `grupoID` int NOT NULL,
+  `parentID` int NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `pd_secciones_parentid_foreign` (`parentID`),
+  KEY `pd_secciones_grupoid_foreign` (`grupoID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -180,160 +171,84 @@ CREATE TABLE `pd_secciones` (
 -- Estructura de tabla para la tabla `pd_vendedores`
 --
 
-CREATE TABLE `pd_vendedores` (
-  `ID` int(11) NOT NULL,
-  `usuario` varchar(80) COLLATE utf8mb4_bin NOT NULL,
-  `contraseña` char(60) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `numero` varchar(20) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `correo` varchar(200) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `lat` decimal(9,6) NOT NULL,
-  `lon` decimal(9,6) NOT NULL,
-  `habilitado` tinyint(1) NOT NULL DEFAULT '1',
-  `nombre` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-  `descripcion` varchar(100) CHARACTER SET utf8 COLLATE utf8_spanish_ci NOT NULL DEFAULT '',
-  `ciudad` varchar(60) CHARACTER SET utf8 COLLATE utf8_spanish_ci NOT NULL,
-  `direccion` varchar(150) CHARACTER SET utf8 COLLATE utf8_spanish_ci NOT NULL,
-  `provincia` varchar(60) CHARACTER SET utf8 COLLATE utf8_spanish_ci NOT NULL,
-  `pais` varchar(90) CHARACTER SET utf8 COLLATE utf8_spanish_ci NOT NULL,
-  `nombreURL` varchar(80) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `categoriaID` int(11) NOT NULL,
-  `color` varchar(6) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `minimoCompra` int(11) NOT NULL DEFAULT '500'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+DROP TABLE IF EXISTS `pd_vendedores`;
+CREATE TABLE IF NOT EXISTS `pd_vendedores` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `usuario` varchar(80) NOT NULL,
+  `contraseña` char(60) NOT NULL,
+  `numero` varchar(20) NOT NULL,
+  `correo` varchar(200) NOT NULL,
+  `habilitado` tinyint NOT NULL DEFAULT '1',
+  `nombre` varchar(80) NOT NULL,
+  `descripcion` varchar(100) NOT NULL,
+  `ciudad` varchar(60) NOT NULL,
+  `direccion` varchar(150) NOT NULL,
+  `provincia` varchar(60) NOT NULL,
+  `pais` varchar(90) NOT NULL,
+  `nombreURL` varchar(80) NOT NULL,
+  `minimoCompra` int NOT NULL DEFAULT '500',
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
 
 --
--- Índices para tablas volcadas
+-- Estructura de tabla para la tabla `pd_vendedores_grupos`
+--
+
+DROP TABLE IF EXISTS `pd_vendedores_grupos`;
+CREATE TABLE IF NOT EXISTS `pd_vendedores_grupos` (
+  `ID` int NOT NULL AUTO_INCREMENT,
+  `vendedorID` int NOT NULL,
+  `grupoID` int NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `pd_vendedores_grupos_vendedorid_foreign` (`vendedorID`),
+  KEY `pd_vendedores_grupos_grupoid_foreign` (`grupoID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Restricciones para tablas volcadas
 --
 
 --
--- Indices de la tabla `pd_admins`
---
-ALTER TABLE `pd_admins`
-  ADD PRIMARY KEY (`ID`);
-
---
--- Indices de la tabla `pd_articulos`
+-- Filtros para la tabla `pd_articulos`
 --
 ALTER TABLE `pd_articulos`
-  ADD PRIMARY KEY (`ID`);
+  ADD CONSTRAINT `pd_articulos_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
+  ADD CONSTRAINT `pd_articulos_seccionid_foreign` FOREIGN KEY (`seccionID`) REFERENCES `pd_secciones` (`ID`);
 
 --
--- Indices de la tabla `pd_cambiosdelivery`
---
-ALTER TABLE `pd_cambiosdelivery`
-  ADD PRIMARY KEY (`cuando`);
-
---
--- Indices de la tabla `pd_cambiosdeprecio`
+-- Filtros para la tabla `pd_cambiosdeprecio`
 --
 ALTER TABLE `pd_cambiosdeprecio`
-  ADD PRIMARY KEY (`ID`);
+  ADD CONSTRAINT `pd_cambiosdeprecio_articuloid_foreign` FOREIGN KEY (`articuloID`) REFERENCES `pd_articulos` (`ID`);
 
 --
--- Indices de la tabla `pd_categorias`
---
-ALTER TABLE `pd_categorias`
-  ADD PRIMARY KEY (`ID`);
-
---
--- Indices de la tabla `pd_horarios`
---
-ALTER TABLE `pd_horarios`
-  ADD PRIMARY KEY (`ID`);
-
---
--- Indices de la tabla `pd_pedidos_articulos`
+-- Filtros para la tabla `pd_pedidos_articulos`
 --
 ALTER TABLE `pd_pedidos_articulos`
-  ADD PRIMARY KEY (`ID`);
+  ADD CONSTRAINT `pd_pedidos_articulos_articuloid_foreign` FOREIGN KEY (`articuloID`) REFERENCES `pd_articulos` (`ID`),
+  ADD CONSTRAINT `pd_pedidos_articulos_pedidoid_foreign` FOREIGN KEY (`pedidoID`) REFERENCES `pd_pedidos_metadatos` (`ID`);
 
 --
--- Indices de la tabla `pd_pedidos_metadatos`
+-- Filtros para la tabla `pd_pedidos_metadatos`
 --
 ALTER TABLE `pd_pedidos_metadatos`
-  ADD PRIMARY KEY (`ID`);
+  ADD CONSTRAINT `pd_pedidos_metadatos_vendedorid_foreign` FOREIGN KEY (`vendedorID`) REFERENCES `pd_vendedores` (`ID`);
 
 --
--- Indices de la tabla `pd_reclamos`
---
-ALTER TABLE `pd_reclamos`
-  ADD PRIMARY KEY (`ID`);
-
---
--- Indices de la tabla `pd_secciones`
+-- Filtros para la tabla `pd_secciones`
 --
 ALTER TABLE `pd_secciones`
-  ADD PRIMARY KEY (`ID`);
+  ADD CONSTRAINT `pd_secciones_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
+  ADD CONSTRAINT `pd_secciones_parentid_foreign` FOREIGN KEY (`parentID`) REFERENCES `pd_secciones` (`ID`);
 
 --
--- Indices de la tabla `pd_vendedores`
+-- Filtros para la tabla `pd_vendedores_grupos`
 --
-ALTER TABLE `pd_vendedores`
-  ADD PRIMARY KEY (`ID`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `pd_admins`
---
-ALTER TABLE `pd_admins`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT de la tabla `pd_articulos`
---
-ALTER TABLE `pd_articulos`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pd_cambiosdeprecio`
---
-ALTER TABLE `pd_cambiosdeprecio`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pd_categorias`
---
-ALTER TABLE `pd_categorias`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pd_horarios`
---
-ALTER TABLE `pd_horarios`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pd_pedidos_articulos`
---
-ALTER TABLE `pd_pedidos_articulos`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pd_pedidos_metadatos`
---
-ALTER TABLE `pd_pedidos_metadatos`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pd_reclamos`
---
-ALTER TABLE `pd_reclamos`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pd_secciones`
---
-ALTER TABLE `pd_secciones`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pd_vendedores`
---
-ALTER TABLE `pd_vendedores`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `pd_vendedores_grupos`
+  ADD CONSTRAINT `pd_vendedores_grupos_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
+  ADD CONSTRAINT `pd_vendedores_grupos_vendedorid_foreign` FOREIGN KEY (`vendedorID`) REFERENCES `pd_vendedores` (`ID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

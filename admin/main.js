@@ -401,25 +401,7 @@ addEventListener('DOMContentLoaded',()=>{
 			.finally(()=>input.disabled=false);
 	}
 	
-	gEt('cue-delivery-update').onclick=function(){
-		let input=this.previousElementSibling;
-		if(input.value==input.defaultValue)
-			return;
-		input.disabled=true;
-		let value=+input.value;
-		sendJSON('libs/admin/update-delivery.php',{delivery:value})
-			.then(res=>res.text())
-			.then(response=>{
-				if(+response){
-					input.defaultValue=value;
-				}else throw new Error('Backend said '+response);
-			})
-			.catch(e=>{
-				console.log(e);
-				showMessage('Ha ocurrido un error inesperado. Intente más tarde.','red');
-			})
-			.finally(()=>input.disabled=false);
-	}
+	
 
 	gEt('cue-pass').onclick=()=>{
 		let newPassword=prompt('Ingrese nueva contraseña:').trim();
