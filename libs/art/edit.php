@@ -16,7 +16,7 @@ if(isset($_FILES['foto'])){
 	$id=(int)$data['editing'];
 }
 
-if(!(isset($_SESSION['ID']) && $id && $db->result('SELECT `vendedorID` FROM `pd_articulos` WHERE `ID`='.$id)==$_SESSION['ID']))
+if(!(isset($_SESSION['isAdmin']) && $id && $db->result('SELECT `grupoID` FROM `pd_articulos` WHERE `ID`='.$id)==$_SESSION['isAdmin']))
 	require $_SERVER['DOCUMENT_ROOT'].'/libs/header-location.php';
 
 $datos=[];
