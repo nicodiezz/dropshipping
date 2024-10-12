@@ -3,15 +3,7 @@
 session_start(['read_and_close'=>true]);
 require '../db.php';
 
-if(
-	!(
-		isset($_SESSION['ID'])
-		&& isset($_POST['Nombre'])
-		&& isset($_POST['Precio'])
-		&& isset($_POST['codigo'])
-		&& trim($_FILES['foto']['tmp_name'])
-	)
-)
+if(!(isset($_SESSION['isAdmin'])))
 	require $_SERVER['DOCUMENT_ROOT'].'/libs/header-location.php';
 
 $precio=(float)$_POST['Precio'];
@@ -22,7 +14,7 @@ $db->prepared(
 		`nombre`
 		,`descripcion`
 		,`precio`
-		,`vendedorID`
+		,`grupoID`
 		,`seccionID`
 		,`codigo_de_barras`
 		,`ext_de_img`
@@ -40,7 +32,7 @@ $db->prepared(
 		trim($_POST['Nombre'])
 		,preg_replace("/\r?\n/",'\n',trim($_POST['Descripcion']))
 		,$precio
-		,$_SESSION['ID']
+		,(int)$_POST['grupoID']
 		,(int)$_POST['Seccion']
 		,(int)$_POST['codigo']
 		,explode('/',$size['mime'])[1]

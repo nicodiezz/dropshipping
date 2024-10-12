@@ -217,7 +217,7 @@ else echo '			crearLogin();';
 
 require 'libs/db.php';
 
-$options=$db->query("SELECT * FROM `pd_categorias`");
+$options=$db->query("SELECT * FROM `pd_grupos`");
 while($option=$options->fetch_assoc()){
 echo "<option value={$option['ID']}>{$option['nombre']}</option>";
 }
