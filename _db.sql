@@ -141,6 +141,7 @@ CREATE TABLE IF NOT EXISTS `pd_secciones` (
   `nombre` varchar(50) COLLATE utf8mb4_spanish_ci NOT NULL,
   `descripcion` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `vendedorID` int(11) NOT NULL,
+  `grupoID` int(11) NOT NULL,
   `parentID` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`ID`),
   KEY `pd_secciones_parentid_foreign` (`parentID`),
