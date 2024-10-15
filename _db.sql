@@ -174,8 +174,8 @@ CREATE TABLE IF NOT EXISTS `pd_vendedores` (
 
 
 -- Estructura de tabla para la tabla `pd_urls`
-
-CREATE TABLE `pd_urls` (
+DROP TABLE IF EXISTS `pd_urls`;
+CREATE TABLE IF NOT EXISTS `pd_urls` (
   `ID` int(11) NOT NULL,
   `nombre` varchar(80) NOT NULL,
   `vendedorID` int(11) NOT NULL,
@@ -184,11 +184,23 @@ CREATE TABLE `pd_urls` (
 
 -- Estructura de tabla para la tabla `pd_metodosdepago`
 
-CREATE TABLE `pd_metodosdepago` (
+DROP TABLE IF EXISTS `pd_metodosdepago`;
+CREATE TABLE IF NOT EXISTS `pd_metodosdepago` (
   `ID` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- Estructura de tabla para la tabla `pd_grupos_metodosdepago`
+
+DROP TABLE IF EXISTS `pd_grupos_metodosdepago`;
+CREATE TABLE IF NOT EXISTS `pd_grupos_metodosdepago` (
+  `ID` int(11) NOT NULL,
+  `grupoID` int(11) NOT NULL,
+  `metodoID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
 
 --
 -- Estructura de tabla para la tabla `pd_vendedores_grupos`
@@ -286,7 +298,7 @@ ALTER TABLE `pd_cambiosdeprecio`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `pd_categorias`
+-- AUTO_INCREMENT de la tabla `pd_grupos`
 --
 
 ALTER TABLE `pd_grupos`
