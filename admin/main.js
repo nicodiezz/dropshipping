@@ -194,7 +194,6 @@ function abrirMenuGrupo(event){
 					.then(res=>res.text())
 					.then(cant=>{
 						if(+cant){
-							let terminacion
 							showMessage('No se puede eliminar el grupo '+thisName+' ya que contiene '+cant+(cant==1?'artículo':'artículos'));
 						}else sendJSON('libs/grupos/has-vends.php',{ID:thisID})
 							.then(res=>res.text())
@@ -221,12 +220,12 @@ function abrirMenuGrupo(event){
 }
 function abrirGrupo() {
 	openScreen('grupo');
-	let grupo=gEt('grupo');
-	sendJSON('libs/grupos/get.php',{id:grupo.dataset.id}).then(
-		res=>res.json()
-	).then(
+	let grupo=this;
+	sendJSON('libs/grupos/get.php',{grupoID:grupo.dataset.id})
+	.then(res=>res.json()).
+	then(
 		data=>{
-			SqS('h1',1,grupo).innerText=data.nombre
+			gEt('titulo-grupo').innerText=data.nombre;
 		}
 	);
 }

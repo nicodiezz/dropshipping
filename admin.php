@@ -88,7 +88,7 @@ $nombre=$personalizacion['nombre'];
 			</div>
 		</div>
 		<div id="grupo" class=notSelectedPanel>
-			<h1> Titulo </h1>
+			<h1 id="titulo-grupo"></h1>
 			<input type="text" placeholder="Escribe para filtar artículos">
 		</div>
 
