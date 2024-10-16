@@ -794,8 +794,6 @@ addEventListener('DOMContentLoaded',()=>{
 		}
 	}
 	
-	
-	
 	gEt('ped-mas').onclick=()=>fetchPedidos(++pedidosPage);
 	
 	gEt('ped-exportar').onclick=()=>{

@@ -1,5 +1,12 @@
 
 var pedidos={},request=0,reclamosPageNum=0,deletingGrupo;
+var articulos={}
+	,editing=0
+	,itemForm
+	,spinners
+	,secciones
+	;
+
 
 function openScreen(screenID){
 	let prev=SqS('.selected');
@@ -151,6 +158,49 @@ function lastMonthPeriod(){
 		else mes='0'+mes;
 	return [todayExploded[0]+'-'+mes+'-'+todayExploded[2],today];
 }
+function search(queryString){
+	for(let boton of gEt('ven-list-buttons').children){
+		let isHidden=boton.classList.contains('hidden');
+		if(test(queryString,boton.innerText)){
+			if(isHidden)
+				boton.classList.remove('hidden');
+		}else if(!isHidden)
+			boton.classList.add('hidden');
+	}
+}
+
+function test(queryString,artText){
+	return new RegExp('.*?'+queryString+'.*?','i').test(artText);
+}
+
+var searchID=0;
+
+function startSearch(valor,reiniciar,buscar=true){
+	if(reiniciar){
+		for(let boton of [...SqS('.hidden',ALL)])
+			boton.classList.remove('hidden');
+		searchID++;
+		return true;
+	}else if(buscar){
+		let myID=++searchID;
+		setTimeout(()=>{
+			if(searchID==myID)
+				search(valor);
+		},350);
+	}
+}
+
+function download(URL, nombre){
+	let anchor=B.appendChild(createNode('A',{
+		href:URL
+		,download:nombre
+		,class:'hidden'
+	}));
+	anchor.click();
+	anchor.remove();
+}
+
+//grupos
 
 function abrirMenuGrupo(event){
 	event.stopPropagation();
@@ -229,6 +279,34 @@ function abrirGrupo() {
 		}
 	);
 }
+//grupo-articulos
+var searchID=0;
+
+function search(queryString){
+	for(let articulo of SqS('.articulo',ALL)){
+		let isHidden=articulo.classList.contains('hidden');
+		if(test(queryString,articulo.dataset.info)){
+			if(isHidden){
+				articulo.classList.remove('hidden');
+				
+				let seccionHolder=articulo,i=0;
+				
+				while(seccionHolder=seccionHolder.closest('.seccion.hidden'))
+					seccionHolder.classList.remove('hidden');
+			}
+		}else if(!isHidden){
+			articulo.classList.add('hidden');
+			let currentSeccion=articulo.parentNode;
+			
+			if(currentSeccion.id!='art-grid')
+				do{
+					currentSeccion=currentSeccion.parentNode;
+					if(!(SqS('.articulo:not(.hidden)',ALL,currentSeccion).length))
+						currentSeccion.classList.add('hidden');
+				}while((currentSeccion=currentSeccion.closest('.children-holder')));
+		}
+	}
+}
 
 function abrirEditor(artID=0,secID=0){
 	itemForm.previousElementSibling.classList.add('notSelectedPanel');
@@ -263,31 +341,271 @@ function abrirEditor(artID=0,secID=0){
 	}
 	gEt('art-subir-boton').value=artID?'Actualizar Artículo':'Subir Artículo';
 }
-
-function agregarArticulo() {
-	abrirEditor(0,0);
+function crearArticulos(...rawArticulos){
+	let artGrid=gEt('art-grid');
+	if(artGrid.firstChild && artGrid.firstChild.tagName=='H2')
+		artGrid.firstChild.remove();
+	for(let artObject of rawArticulos){
+		artObject.descripcion=artObject.descripcion.replaceAll('\\n','\n');
+		articulos[artObject.ID]=artObject;
+		
+		let seccionName=secciones[artObject.seccionID],
+			whole=createNode(
+				'DIV',{
+					class:'articulo'
+					,dataset:{
+						id:artObject.ID
+						,info:artObject.nombre+','+artObject.descripcion+','+artObject.codigo_de_barras+','+seccionName
+					}
+					,children:[
+						['SPAN',{class:'art-symbol'}]
+						,['SPAN',{class:'art-nombre',innerText:artObject.nombre}]
+						,['I',{classList:['fas','fa-ellipsis-h']}]
+						,['SPAN',{children:[
+							['SPAN',{class:'art-precio',innerText:artObject.precio}]
+							,['SPAN',{children:[
+								['SPAN',{innerText:' | '}]
+								,['SPAN',{innerText:seccionName}]
+							]}]
+						]}]
+					]
+				}
+			);
+		if(artObject.disponible==2)
+			whole.classList.add('escondido');
+		if(+artObject.destacado)
+			whole.classList.add('destacado');
+		artGrid.appendChild(whole);
+	}
 }
-function search(queryString){
-	for(let boton of gEt('ven-list-buttons').children){
-		let isHidden=boton.classList.contains('hidden');
-		if(test(queryString,boton.innerText)){
-			if(isHidden)
-				boton.classList.remove('hidden');
-		}else if(!isHidden)
-			boton.classList.add('hidden');
+function deleteFun(){
+	let botones=[]
+		,parent=this.parentNode
+		,thisSeccion=parent.parentNode
+		,reestablecerBotones=()=>botones.map(boton=>boton.disabled=false);
+	for(let child of parent.children)
+		if(child.tagName=='BUTTON'){
+			child.disabled=true;
+			botones.push(child);
+		}
+	if(confirm('¿Seguro desea eliminar esta sección? Esto no se puede deshacer. Todos los artículos pasaran a la sección superior o al Inicio.'))
+		sendJSON('libs/delete-seccion.php',{secID:thisSeccion.dataset.id})
+			.then(response=>{
+				if(response.ok){
+					let superiorChildrenHolder=thisSeccion.parentNode
+					
+						,newNeighborsSec=[]
+						,newNeighborsArt=[]
+						
+						,nestedSec=[]
+						,nestedArt=[];
+					
+					for(let sibling of superiorChildrenHolder.children)
+						if(sibling.classList.contains('articulo'))
+							newNeighborsArt.push(sibling);
+						else if(sibling.dataset.id==thisSeccion.dataset.id)
+							continue;
+						else if(sibling.classList.contains('seccion'))
+							newNeighborsSec.push(sibling);
+					newNeighborsSec.push(false);
+					newNeighborsArt.push(false);
+					
+					for(let child of parent.nextElementSibling.children)
+						if(child.classList.contains('articulo'))
+							nestedArt.push(child);
+						else if(child.classList.contains('seccion'))
+							nestedSec.push(child);
+					
+					if(newNeighborsSec.length > 1)
+						for(let sec of nestedSec)
+							for(let i in newNeighborsSec){
+								let currentNeighbor=newNeighborsSec[i];
+								if(currentNeighbor){
+									if(+currentNeighbor.dataset.id > +sec.dataset.id){
+										currentNeighbor.before(sec);
+										newNeighborsSec.splice(+i,0,sec);
+										break;
+									}
+								}else{
+									newNeighborsSec[i-1].after(sec);
+									newNeighborsSec.splice(+i,0,sec);
+								}
+							}
+					else for(let sec of nestedSec)
+						superiorChildrenHolder.prepend(sec);
+					
+					if(newNeighborsArt.length)
+						for(let art of nestedArt)
+							for(let i in newNeighborsArt){
+								let currentNeighbor=newNeighborsArt[i];
+								if(currentNeighbor){
+									if(+currentNeighbor.dataset.id > +art.dataset.id){
+										currentNeighbor.before(art);
+										newNeighborsArt.splice(+i,0,art);
+										break;
+									}
+								}else{
+									newNeighborsArt[i-1].after(art);
+									newNeighborsArt.splice(+i,0,art);
+								}
+							}
+					else for(let art of nestedArt)
+						superiorChildrenHolder.appendChild(art);
+					
+					for(let spinner of spinners)
+						SqS('[value="'+thisSeccion.dataset.id+'"]',ONLY_ONE,spinner).remove();
+					thisSeccion.remove();
+				}else{
+					reestablecerBotones();
+					noSeHaPodido();
+				}
+			});
+	else reestablecerBotones();
+}
+
+function openFun(){
+	if(this.parentNode.nextElementSibling.children.length){
+		let [div,text]=+this.value?['none','▽']:['block','△'];
+		this.parentNode.nextElementSibling.style.display=div;
+		this.innerText=text;
+		this.value=+!+this.value;
 	}
 }
 
-function test(queryString,artText){
-	return new RegExp('.*?'+queryString+'.*?','i').test(artText);
+function editField(e){
+	let field=this.parentNode.firstChild;
+	if('✏️'==this.innerText){
+		this.innerText='✅';
+		this.previousElementSibling.style.display='inline';
+		field.disabled=false;
+		field.focus();
+		
+		this.parentNode.children[3].style.display='none';
+		this.parentNode.children[4].style.display='none';
+	
+	}else{
+		field.disabled=true;
+		this.previousElementSibling.style.display='none';
+		this.innerText='✏️';
+		let newValue=field.value;
+		
+		this.parentNode.children[3].style.display='block';
+		this.parentNode.children[4].style.display='block';
+		
+		if(field.defaultValue!=newValue){
+			this.disabled=true;
+			sendJSON('libs/edit-seccion.php',{secID:field.closest('.seccion').dataset.id,newName:newValue})
+				.then(response=>{
+					if(response.ok){
+						field.defaultValue=newValue;
+						this.disabled=false;
+					}else noSeHaPodido();
+				})
+				;
+		}
+	}
 }
 
-var searchID=0;
+function cancelEdition(){
+	let field=this.parentNode.firstChild;
+	field.value=field.defaultValue;
+	field.disabled=true;
+	this.style.display='none';
+	this.nextElementSibling.innerText='✏️';
+	
+	this.parentNode.children[3].style.display='block';
+	this.parentNode.children[4].style.display='block';
+}
+function resetArtForm(){
+	let form=D.forms['art-añadir'];
+	form.Nombre.defaultValue='';
+	form.Descripcion.defaultValue='';
+	form.Precio.defaultValue='';
+	form.codigo.defaultValue='';
+	form.reset();
+	form.foto.previousElementSibling.src='img/articulo.php';
+	form.foto.nextElementSibling.classList.add('hidden');
+}
 
+function changeImage(e){
+	if (this.files && this.files[0]) {
+		const FR= new FileReader;
+		FR.addEventListener("load", e=>{
+			this.previousElementSibling.src=e.target.result;
+			this.nextElementSibling.classList.remove('hidden');
+		});
+		FR.readAsDataURL( this.files[0]);
+	}
+}
+
+function resetImagePicker(button,src){
+	button.previousElementSibling.previousElementSibling.src=src;
+	button.previousElementSibling.value='';
+	button.classList.add('hidden');
+}
+
+function noSeHaPodido(){
+	alert('No se ha podido realizar la acción, reintente más tarde.');
+}
+function genericCatch(e){
+	console.log(e);
+	noSeHaPodido();
+}
+
+function crearSec(sec){
+	
+	for(let spinner of spinners)
+		spinner.appendChild(createNode(
+			'OPTION',{
+				value:sec.ID
+				,innerText:sec.nombre
+			}
+		));
+	
+	secciones[sec.ID]=sec.nombre;
+}
+
+function showArtsContextMenu(nx,y){
+	let contextMenu=gEt('art-context');
+	
+	contextMenu.firstElementChild.style.right=nx+'px';
+	contextMenu.firstElementChild.style.top=y+'px';
+	
+	contextMenu.style.display='flex';
+	return new Promise((resolve,reject)=>{
+		contextMenu.onclick=function(e){
+			let target=e.target;
+			switch(target.tagName){
+			case 'BUTTON':
+				resolve(target.innerText);
+				break;
+			case 'I':
+				resolve(target.parentNode.innerText);
+				break;
+			default:
+				reject();
+			}
+			this.style.display='none';
+		}
+	});
+}
+
+function toggleArtAttr(attr,CSSclass,art){
+	art.classList.add('nominado');
+	art.classList.toggle(CSSclass);
+	sendJSON(`libs/art/toggle/${attr}.php`,{ID:art.dataset.id,value:art.classList.contains(CSSclass)})
+		.then(res=>res.text())
+		.then(text=>{
+			if(+text)
+				art.classList.remove('nominado');
+			else art.classList.toggle(CSSclass);
+		})
+		.catch(genericCatch);
+}
 function startSearch(valor,reiniciar,buscar=true){
 	if(reiniciar){
-		for(let boton of [...SqS('.hidden',ALL)])
-			boton.classList.remove('hidden');
+		for(let hidden of [...SqS('.hidden',ALL)])
+			hidden.classList.remove('hidden');
 		searchID++;
 		return true;
 	}else if(buscar){
@@ -299,17 +617,46 @@ function startSearch(valor,reiniciar,buscar=true){
 	}
 }
 
-function download(URL, nombre){
-	let anchor=B.appendChild(createNode('A',{
-		href:URL
-		,download:nombre
-		,class:'hidden'
-	}));
-	anchor.click();
-	anchor.remove();
+function volverDelEditor(){
+		// this.parentNode.parentNode
+	gEt('art-añadir').classList.add('notSelectedPanel');
+	gEt('art-inicio').classList.remove('notSelectedPanel');
 }
 
+
+function bulkInputsOnchange(){
+	if(!(this.files && this.files[0]))
+		return;
+		
+	let cLToEdit=this.nextElementSibling.classList;
+	if(cLToEdit.contains('bulk-image-done'))
+		cLToEdit.remove('bulk-image-done');
+	if(cLToEdit.contains('bulk-image-fail'))
+		cLToEdit.remove('bulk-image-fail');
+	cLToEdit.add('emoji-loader');
+	
+	let fd=new FormData()
+		,editingID=this.closest('.bulk-image-input').dataset.newid;
+	fd.append('newImage',this.files[0]);
+	fd.append('ID',editingID);
+	ajax('libs/update-art-img.php',{body:fd})
+		.then(res=>res.text())
+		.then(response=>{
+			cLToEdit.remove('emoji-loader');
+			if(+response){
+				cLToEdit.add('bulk-image-done');
+				SqS('.articulo[data-id="'+editingID+'"]').firstChild.src='img/articulo.php?ID='+editingID+'&rand='+Math.random();
+			}else cLToEdit.add('bulk-image-fail');
+		})
+		.catch(e=>{
+			console.log(e);
+			cLToEdit.remove('emoji-loader');
+			cLToEdit.add('bulk-image-fail');
+		});
+};
 addEventListener('DOMContentLoaded',()=>{
+	itemForm=gEt('art-añadir');
+	spinners=[SqS('[name="Seccion"]',ONLY_ONE,itemForm),gEt('bulk-area-select')];
 	
 	//events
 	
@@ -566,12 +913,12 @@ addEventListener('DOMContentLoaded',()=>{
 					showMessage('Ha ocurrido un error, intente más tarde.\nSi este error le ocurre seguido, contacte al soporte.','red');
 				});
 		}
-	}
+	};
 	
 	gEt('grupo-hasVends').onclick=function(e){
 		if(e.target==this)
 			this.firstElementChild.lastElementChild.lastElementChild.click();//cancelar button
-	}
+	};
 	
 	gEt('grupo-hasVends-body-buttons').onclick=function(e){
 		let target=e.target;
@@ -596,9 +943,8 @@ addEventListener('DOMContentLoaded',()=>{
 				});
 		}
 		deletingGrupo=null;
-	}
-	//grupo
-	/* botones de articulos en vendedor: 
+	};
+	//grupo-articulos
 	gEt('art-inicio').onclick=function(e){
 		let target=e.target;
 		if(target==this)
@@ -669,6 +1015,350 @@ addEventListener('DOMContentLoaded',()=>{
 					}
 				});
 		}
-	}*/
+	};
 	
+	gEt('bulk-message').onclick=function(e){
+		target=e.target;
+		if(target==this)
+			this.style.display='none';
+		else if(target.id=='bulk-select'){
+			createNode('INPUT',{
+				type:'file'
+				,accept:'.xlsx,.xls,.zip'
+				,onchange:function(){
+					if(this.files && this.files[0]){
+						let chosenAreaOption=+SqS('[name="bulk-area-radio"]:checked').value;
+						
+						startLoading('img/loading.gif');
+						let area={
+							isNew:chosenAreaOption
+							,data:chosenAreaOption?
+								SqS('input.bulk-area-input').value.trim()
+								:gEt('bulk-area-select').value
+						};
+						sendPOST('libs/art/bulk.php',{
+							articulos:this.files[0]
+							,area
+							,destacar:+gEt('bulk-destacado').checked
+						})
+							.then(res=>res.json())
+							.then(result=>{
+								stopLoading();
+								switch(result[0]){
+								case 1:
+									let arts=result[1].arts;
+									if(!arts.length){
+										showMessage('No se han detectado articulos. Revise que el archivo cumpla con el formato necesario.','red');
+										return;
+									}
+									let div=createNode('DIV',{id:'bulk-image-table',children:[
+										['TABLE','TBODY']
+										,['BUTTON',{
+											innerText:'Terminar'
+											,id:'bulk-end'
+											,dataset:{
+												...(area.isNew?{ID:result[1].newAreaID,nombre:area.data}:'')
+											}
+										}]
+										,['BUTTON',{
+											innerText:'Cancelar'
+											,class:'danger'
+											,id:'bulk-cancel'
+											,dataset:{
+												articulosIDs:arts.map(cur=>cur.ID).join(',')
+												,area:area.isNew?result[1].newAreaID:0
+											}
+										}]
+									]})
+										,tbody=div.firstChild.firstChild;
+									tbody.appendChild(createNode('TR',{
+										children:[
+											['TH',{innerText:'Artículo'}]
+											,['TH',{innerText:'Imagen'}]
+										]
+									}));
+									for(let art of arts)
+										tbody.appendChild(createNode('TR',{
+											dataset:art
+											,children:[
+												['TD',{innerText:art.nombre}]
+												,['TD',art.ext_de_img?
+													['IMG',{
+														src:'img/articulo.php?ID='+art.ID
+														,class:'bulk-image'
+													}]
+													:['DIV',{
+														dataset:{newid:art.ID}
+														,class:'bulk-image-input'
+														,children:[
+															,['INPUT',{
+																type:'file'
+																,accept:'image/*'
+																,onchange:bulkInputsOnchange
+															}]
+															,['DIV','SPAN']
+														]
+													}]
+												]
+											]
+										}));
+									
+									gEt('bulk-message').children[0].prepend(div);
+									break;
+								case 0:
+									showMessage('Archivo fuera de formato.','red');
+									break;
+								case -1:
+									showMessage('Archivo no soportado.','red');
+									break;
+								}
+							})
+							.catch(e=>{
+								console.log(e);
+								gEt('bulk-message').style.display='none';
+								stopLoading();
+								alert('Ha ocurrido un error. Reintente más tarde y si el error persiste, comuniquese con el soporte.')
+							});
+					}else gEt('bulk-message').style.display='none';
+				}
+			}).click();
+		}else if(target.id=='bulk-end'){
+			// if(+target.dataset.ID)
+			// 	SqS('#art-grid > .articulo').before(crearSec(target.dataset));
+			for(let artTR of SqS('tr:not(:first-child)',ALL,gEt('bulk-image-table')))
+				crearArticulos(artTR.dataset);
+			target.parentNode.remove();
+		}else if(target.id=='bulk-cancel'){
+			sendJSON('libs/art/bulk-cancel.php',Object.entries(target.dataset).reduce((acc,cur)=>{
+				acc[cur[0]]=cur[1];
+				return acc;
+			},{}));
+			target.parentNode.remove();
+		}else if(target.tagName=='INPUT' && target.type=='radio'){
+			let prev=SqS('.bulk-area-input:not([disabled])',ONLY_ONE,gEt('bulk-area'))
+			if(prev)
+				prev.disabled=true;
+			target.nextElementSibling.disabled=false;
+		}
+	};
+
+	gEt('busqueda-input').onkeyup=function(e){
+		let realValue=this.value.trim();
+		startSearch(
+			realValue
+			,!realValue && e.which==8
+			,e.key.length==1 || e.which==8
+		);
+	};
+	
+	gEt('busqueda-input').onchange=function(){
+		let realValue=this.value.trim();
+		startSearch(
+			realValue
+			,!realValue
+		);
+	};
+
+	gEt('art-añadir-volver').onclick=volverDelEditor;
+
+	gEt('art-export-panel-export').onclick=function(){
+		let selectedArts=[...SqS('.art-exporting-selected',ALL)];
+		if(!selectedArts.length)
+			return;
+		download('libs/art/export.php?articles='+selectedArts.map(e=>e.dataset.id),'articulos.zip');
+	}
+	
+	gEt('art-export-panel-cancel').onclick=function(){
+		gEt('art-inicio').classList.remove('art-exporting');
+		let div=this.parentNode;
+		div.style.display='none';
+		div.previousElementSibling.style.display='block';
+	}
+	
+	gEt('art-export-panel-toggle').onclick=function(){
+		for(let art of [...SqS('.articulo:not(.escondido-hidden):not(.hidden)',ALL)])
+			art.classList.toggle('art-exporting-selected');
+	}
+	
+	gEt('art-export-panel-reset').onclick=function(){
+		for(let art of [...SqS('.art-exporting-selected',ALL)])
+			art.classList.remove('art-exporting-selected');
+	}
+	
+	D.forms['art-añadir'].onsubmit=function(){
+		let campos={
+			nombre:this.Nombre
+			// ,dispo:this.Disponible
+			// ,destacado:+this.destacado.checked
+			,descripcion:this.Descripcion
+			,codigo:this.codigo
+			,precio:this.Precio
+			,foto:this.foto
+			,seccion:this.Seccion
+		},url,body,after,parameters;
+		
+		if(editing){
+			url='libs/art/edit.php';
+			body=[];
+			
+			body.push(['editing',editing]);
+			for(let campo of [
+				'nombre'
+				,'descripcion'
+				,'precio'
+				,'codigo'
+			]){//campos con defaultValue
+				let thisCampo=campos[campo];
+				if(thisCampo.defaultValue!=thisCampo.value)
+					body.push([campo,thisCampo.value]);
+			}
+			for(let campo of [
+				// ['disponible','dispo'],
+				['seccionID','seccion']
+			]){//campos sin defaultValue
+				let valorCampoReal=campos[campo[1]].value;
+				if(articulos[editing][campo[0]]!=valorCampoReal)
+					body.push([campo[1],valorCampoReal]);
+			}
+			// if(campos.destacado != articulos[editing]['destacado'])
+			// 	body.push(['destacado',campos.destacado]);
+				
+			
+			if(campos.foto.files.length){
+				let fd=new FormData;
+				for(let [key,value] of body)
+					fd.append(key,value);
+				fd.append('foto',campos.foto.files[0]);
+				parameters=['ajax',{body:fd}];
+			}else{
+				if(body.length>1){
+					let newBody={};
+					for(let [key,value] of body)
+						newBody[key]=value;
+					parameters=['sendJSON',newBody];
+				}else{
+					gEt('art-añadir-volver').click();
+					return false;
+				}
+			}
+			
+			after=response=>{
+				let editingArt=SqS('.articulo[data-id="'+editing+'"]')
+					,datos=articulos[editing]
+					,updateInfo=({n=datos.nombre,d=datos.descripcion,c=datos.codigo_de_barras,s=secciones[datos.seccionID]})=>{
+						// let datos=articulos[editing];
+						// editingArt.dataset.info=datos.nombre+','+datos.descripcion+','+datos.codigo_de_barras+','+s
+						editingArt.dataset.info=`${n},${d},${c},${s}`;
+						// let info=editingArt.dataset.info.split(',');
+					};
+				for(let key of Object.keys(response))
+					switch(key){
+					case 'updateName':
+						let newName=campos.nombre.value;
+						editingArt.children[1].innerText=newName;
+						articulos[editing].nombre=newName;
+						updateInfo({n:newName});
+						// campos.nombre.defaultValue=newName;
+						break;
+					case 'updateDesc':
+						// let newDesc
+						updateInfo({d:
+						articulos[editing].descripcion
+						=campos.descripcion.value//;
+							// newDesc
+						});
+						// =newDesc;
+						// campos.descripcion.defaultValue=newDesc;
+						break;
+					case 'updateCode':
+						updateInfo({
+							c:articulos[editing].codigo_de_barras=campos.codigo.value
+						});
+						break;
+					case 'updatePrecio':
+						let newPrecio=campos.precio.value;
+						articulos[editing].precio=newPrecio;
+						editingArt.lastElementChild.firstElementChild.innerText=newPrecio;
+						break;
+					case 'updateSec':
+						let newSec=campos.seccion.value;
+						articulos[editing].seccionID=newSec;
+						editingArt.lastElementChild.lastElementChild.lastElementChild.innerText=secciones[newSec];
+						updateInfo({n:newSec});
+						break;
+					}
+					
+				this.firstElementChild.disabled=false;
+			};
+		}else{//new 
+			if(!campos.foto.files.length){
+				alert('Debe elegir una imagen para el artículo nuevo.');
+				return false;
+			}
+			url='libs/art/new.php';
+			body=new FormData(this);
+			body.append('editing',0);
+			after=response=>{
+				crearArticulos(response);
+				
+				this.firstElementChild.disabled=false;
+			}
+			parameters=['ajax',{body:body}];
+		}
+		
+		this.firstElementChild.disabled=true;
+		
+		W[parameters[0]](url,parameters[1])
+			.then(r=>r.json())
+			.then(response=>{
+				after(response);
+				gEt('art-añadir-volver').click();//volver
+				resetArtForm();
+			})
+			.catch(e=>{
+				this.firstElementChild.disabled=false;
+				genericCatch(e);
+				// console.log(e);
+				// noSeHaPodido();
+			})
+			;
+			
+		return false;
+	};
+
+	fetch('libs/get-secciones.php')
+	.then(r=>r.json())
+	.then(json=>{
+		secciones=json;
+		
+		let objsSecciones=Object.entries(json).map(([ID,nombre])=>[
+			'OPTION',{
+				value:ID
+				,innerText:nombre
+			}
+		]);
+		
+		for(let spinner of spinners){
+			spinner.innerHTML='';
+			addNode(spinner,...objsSecciones);
+			spinner.disabled=false;
+		}
+
+	fetch('libs/get-articles.php')
+		.then(r=>r.json())
+		.then(arts=>{
+			if(arts.length)
+				crearArticulos(...arts);
+			else{
+				gEt('art-grid').prepend(createNode(
+					'H2',{
+						class:'aviso-art-vacio'
+						,innerText:'Todavía no ha subido ningún artículo.'
+					}
+				));
+			}
+		})
+		.catch(genericCatch);
+	
+	});
 });
