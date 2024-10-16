@@ -3,7 +3,7 @@
 session_start(['read_and_close'=>true]);
 define('DR',$_SERVER['DOCUMENT_ROOT']);
 
-if(!isset($_SESSION['ID']))
+if(!isset($_SESSION['isAdmin']))
 	require DR.'/libs/header-location.php';
 
 $zipArchive = new ZipArchive();
@@ -47,7 +47,7 @@ require '../db.php';
 $result=$db->query(
 	"SELECT * FROM `pd_articulos` WHERE
 		`ID` IN(".join(',',array_map(fn($ID)=>(int)$ID,explode(',',$_GET['articles']))).")
-		AND `vendedorID`={$_SESSION['ID']}"
+		AND `grupoID`={$_SESSION['isAdmin']}"
 );
 
 $i=0;

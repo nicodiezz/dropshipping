@@ -2,7 +2,7 @@
 session_start(['read_and_close'=>true]);
 define('DR',$_SERVER['DOCUMENT_ROOT']);
 
-if(!(isset($_FILES['articulos']) && isset($_SESSION['ID'])))
+if(!(isset($_FILES['articulos']) && isset($_SESSION['isAdmin'])))
 	require DR.'/libs/header-location.php';
 
 function badFormat($arg){
@@ -40,7 +40,7 @@ $response=[1,[
 require '../db.php';
 
 if((int)$_POST['area']['isNew']){
-	$db->prepared('INSERT INTO `pd_secciones` (`nombre`,`vendedorID`) VALUES (?,'.$_SESSION['ID'].')','s',$_POST['area']['data']);
+	$db->prepared('INSERT INTO `pd_secciones` (`nombre`,`grupoID`) VALUES (?,'.$_SESSION['isAdmin'].')','s',$_POST['area']['data']);
 	$secID=$db->insert_id();
 	$response[1]['newAreaID']=$secID;
 }else $secID=(int)$_POST['area']['data'];
@@ -58,7 +58,7 @@ define('PRECIO',4);
 
 $imagenesIDsPairs=[];
 
-$valuesForVendIDYSecID=",{$_SESSION['ID']},$secID,";
+$valuesForVendIDYSecID=",{$_SESSION['isAdmin']},$secID,";
 $siDestacarONo=','.(int)$_POST['destacar'];
 
 foreach ($rows as $row){
@@ -76,7 +76,7 @@ foreach ($rows as $row){
 	){
 		$db->prepared(
 			'INSERT INTO `pd_articulos`
-				(`nombre`,`descripcion`,`precio`,`vendedorID`,`seccionID`,`codigo_de_barras`,`destacado`,`ext_de_img`)
+				(`nombre`,`descripcion`,`precio`,`grupoID`,`seccionID`,`codigo_de_barras`,`destacado`,`ext_de_img`)
 				VALUES
 				(?,?,'.$precio.$valuesForVendIDYSecID.(int)$row[CODIGO].$siDestacarONo.',?)'
 			,'sss'
@@ -85,7 +85,7 @@ foreach ($rows as $row){
 		$id=$db->insert_id();
 		file_put_contents('../../protected/'.md5($id),$fileContents);
 	}else{
-		$db->prepared('INSERT INTO `pd_articulos` (`nombre`,`descripcion`,`precio`,`vendedorID`,`seccionID`,`codigo_de_barras`,`destacado`) VALUES (?,?,'.$precio.$valuesForVendIDYSecID.(int)$row[CODIGO].$siDestacarONo.')','ss',[$nombre,trim($row[DESCRIPCION])]);
+		$db->prepared('INSERT INTO `pd_articulos` (`nombre`,`descripcion`,`precio`,`grupoID`,`seccionID`,`codigo_de_barras`,`destacado`) VALUES (?,?,'.$precio.$valuesForVendIDYSecID.(int)$row[CODIGO].$siDestacarONo.')','ss',[$nombre,trim($row[DESCRIPCION])]);
 		$id=$db->insert_id();
 	}
 	

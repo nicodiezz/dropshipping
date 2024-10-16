@@ -4,7 +4,7 @@ define('DR',$_SERVER['DOCUMENT_ROOT']);
 
 $data=(json_decode(file_get_contents('php://input'),true));
 
-if(!(isset($data['articulosIDs']) && isset($_SESSION['ID'])))
+if(!(isset($data['articulosIDs']) && isset($_SESSION['isAdmin'])))
 	require DR.'/libs/header-location.php';
 
 require '../db.php';

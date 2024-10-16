@@ -7,7 +7,7 @@ if(!(isset($_SESSION['isAdmin']) && isset($data['nombre']) && isset($data['comis
 
 require '../db.php';
 
-if ($db->prepared('INSERT INTO `pd_grupos` (`nombre`, `comision`) VALUES (?, ?)', 'sd', trim($data['nombre']), (float)$data['comision']))
+if ($db->prepared('INSERT INTO `pd_grupos` (`nombre`, `comision`) VALUES (?, ?)', 'sd', [trim($data['nombre']), (float)$data['comision']]))
 	echo $db->insert_id();
 else echo 0;
 ?>

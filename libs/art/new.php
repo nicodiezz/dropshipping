@@ -49,5 +49,4 @@ die(
 		$db->query("SELECT * FROM `pd_articulos` WHERE `ID`=".$id)->fetch_assoc()
 	)
 );
-
 ?>
