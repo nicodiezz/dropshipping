@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `pd_articulos` (
   PRIMARY KEY (`ID`),
   KEY `pd_articulos_grupoid_foreign` (`grupoID`),
   KEY `pd_articulos_seccionid_foreign` (`seccionID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 
 --
@@ -69,7 +69,8 @@ CREATE TABLE IF NOT EXISTS `pd_cambiosdeprecio` (
   `nuevoPrecio` decimal(15,2) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `pd_cambiosdeprecio_articuloid_foreign` (`articuloID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;
+
 
 
 --
@@ -81,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `pd_grupos` (
   `nombre` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
   `comision` int(11) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 
 --
@@ -146,7 +147,7 @@ CREATE TABLE IF NOT EXISTS `pd_secciones` (
   PRIMARY KEY (`ID`),
   KEY `pd_secciones_parentid_foreign` (`parentID`),
   KEY `pd_secciones_grupoid_foreign` (`grupoID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
 
 --
@@ -214,7 +215,7 @@ CREATE TABLE IF NOT EXISTS `pd_vendedores_grupos` (
   PRIMARY KEY (`ID`),
   KEY `pd_vendedores_grupos_vendedorid_foreign` (`vendedorID`),
   KEY `pd_vendedores_grupos_grupoid_foreign` (`grupoID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 --
 -- Restricciones para tablas volcadas
