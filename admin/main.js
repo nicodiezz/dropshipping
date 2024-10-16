@@ -230,6 +230,43 @@ function abrirGrupo() {
 	);
 }
 
+function abrirEditor(artID=0,secID=0){
+	itemForm.previousElementSibling.classList.add('notSelectedPanel');
+	itemForm.classList.remove('notSelectedPanel');
+	editing=artID;//necessary for submit, editing is global
+	// let eliminarButton=gEt('art-eliminar');
+	if(artID){
+		let thisArt=articulos[artID];
+		for(let campo of [
+			['img','src','img/articulo.php?ID='+artID+'&rand='+Math.random()]
+			,['[name="Nombre"]','defaultValue',thisArt['nombre']]
+			,['[name="Descripcion"]','value',thisArt['descripcion']]
+			// ,['[name="Disponible"]','value',thisArt['disponible']]
+			,['[name="Precio"]','value',thisArt['precio']]
+			,['#new-art-sec-input','value',thisArt['seccionID']]
+			,['[name="codigo"]','value',thisArt['codigo_de_barras']]
+		]){
+			let campoElem=SqS(campo[0],ONLY_ONE,itemForm);
+			campoElem[campo[1]]=campo[2];
+			if(campo[1]=='value')
+				campoElem.defaultValue=campo[2];
+		}
+		// gEt('art-añadir-destacado').firstElementChild.checked=!!+thisArt.destacado;
+		// if(eliminarButton.hasAttribute('style'))
+		// 	eliminarButton.removeAttribute('style');
+	}else{
+		resetArtForm();
+		let select=gEt('new-art-sec-input');
+		select.value=secID;
+		// if(!eliminarButton.hasAttribute('style'))
+		// 	eliminarButton.style.display='none';
+	}
+	gEt('art-subir-boton').value=artID?'Actualizar Artículo':'Subir Artículo';
+}
+
+function agregarArticulo() {
+	abrirEditor(0,0);
+}
 function search(queryString){
 	for(let boton of gEt('ven-list-buttons').children){
 		let isHidden=boton.classList.contains('hidden');
@@ -402,8 +439,6 @@ addEventListener('DOMContentLoaded',()=>{
 			})
 			.finally(()=>input.disabled=false);
 	}
-	
-	
 
 	gEt('cue-pass').onclick=()=>{
 		let newPassword=prompt('Ingrese nueva contraseña:').trim();
@@ -435,6 +470,75 @@ addEventListener('DOMContentLoaded',()=>{
 			}else showMessage('Las contraseñas ingresadas no coinciden, intentelo otra vez.');
 		}
 	};
+	
+	let listFilter=gEt('ven-list-filter')
+	
+	listFilter.onkeyup=function(e){
+		let realValue=this.value.trim();
+		startSearch(
+			realValue
+			,!realValue && e.which==8
+			,e.key.length==1 || e.which==8
+		);
+	};
+	
+	listFilter.onchange=function(){
+		let realValue=this.value.trim();
+		startSearch(
+			realValue
+			,!realValue
+		);
+	};
+	
+	//UI building
+	
+	fetch('libs/get-vendedores.php')
+		.then(res=>res.json())
+		.then(vends=>{
+			if(vends.length){
+				let container=gEt('ven-list-buttons');
+				for(let vend of vends)
+					container.appendChild(createNode('BUTTON',{
+						value:vend['ID']
+						,innerText:vend['nombre']
+						,dataset:{habilitado:vend['habilitado']}
+					}));
+			}
+		});
+		
+	gEt('rec').append(createNode('BUTTON',{
+		id:'rec-more'
+		,innerText:'Cargar más reclamos'
+		,onclick:cargarMasReclamos
+	}));
+	
+	cargarMasReclamos();
+	
+	//grupos
+	fetch('libs/grupos/get-all.php')
+		.then(res=>res.json())
+		.then(grupos=>{
+			let container=gEt('grupos-container');
+			if(grupos.length){
+				for(let grupo of grupos){
+					let grupo_div = createNode('DIV',{
+						class:'grupo'
+						,innerText:grupo['nombre']
+						,onclick:abrirGrupo
+						,dataset:{id:grupo['ID']}
+					});
+					grupo_div.appendChild(createNode('BUTTON',{
+						class:"grupo-edit",
+						onclick:abrirMenuGrupo,
+						innerText:'⋮',
+						dataset:{id:grupo['ID']}
+					}));
+					container.appendChild(grupo_div);
+				}
+			}else{
+				container.innerHTML='<p>No existen grupos de artículos aún.</p>';
+			}
+		})
 	
 	gEt('grupo-add').onclick=()=>{
 		let nuevoNombre=prompt('Ingrese el nombre del nuevo grupo.');
@@ -493,73 +597,78 @@ addEventListener('DOMContentLoaded',()=>{
 		}
 		deletingGrupo=null;
 	}
+	//grupo
+	/* botones de articulos en vendedor: 
+	gEt('art-inicio').onclick=function(e){
+		let target=e.target;
+		if(target==this)
+			return;
+		if(target.tagName=='BUTTON' && target.classList.contains('new')){
+			let artGrid=gEt('art-grid');
+			
+			if(target.classList.contains('sec')){
+				let nombre=prompt('Escriba el nombre de la nueva categoría:');
+				if(nombre && (nombre=nombre.trim()))
+					sendJSON('libs/new-sec.php',{nombre,parentID:0})
+						.then(res=>res.json())
+						.then(crearSec);
+
+			}else if(target.classList.contains('art'))
+				abrirEditor(0,0);
+			
+			else if(target.id=='bulk')
+				gEt('bulk-message').style.display='flex';
 	
-	let listFilter=gEt('ven-list-filter')
-	
-	listFilter.onkeyup=function(e){
-		let realValue=this.value.trim();
-		startSearch(
-			realValue
-			,!realValue && e.which==8
-			,e.key.length==1 || e.which==8
-		);
-	};
-	
-	listFilter.onchange=function(){
-		let realValue=this.value.trim();
-		startSearch(
-			realValue
-			,!realValue
-		);
-	};
-	
-	//UI building
-	
-	fetch('libs/get-vendedores.php')
-		.then(res=>res.json())
-		.then(vends=>{
-			if(vends.length){
-				let container=gEt('ven-list-buttons');
-				for(let vend of vends)
-					container.appendChild(createNode('BUTTON',{
-						value:vend['ID']
-						,innerText:vend['nombre']
-						,dataset:{habilitado:vend['habilitado']}
-					}));
-			}
-		});
-		
-	gEt('rec').append(createNode('BUTTON',{
-		id:'rec-more'
-		,innerText:'Cargar más reclamos'
-		,onclick:cargarMasReclamos
-	}));
-	
-	cargarMasReclamos();
-	
-	fetch('libs/grupos/get-all.php')
-		.then(res=>res.json())
-		.then(grupos=>{
-			let container=gEt('grupos-container');
-			if(grupos.length){
-				for(let grupo of grupos){
-					let grupo_div = createNode('DIV',{
-						class:'grupo'
-						,innerText:grupo['nombre']
-						,onclick:abrirGrupo
-						,dataset:{id:grupo['ID']}
-					});
-					grupo_div.appendChild(createNode('BUTTON',{
-						class:"grupo-edit",
-						onclick:abrirMenuGrupo,
-						innerText:'⋮',
-						dataset:{id:grupo['ID']}
-					}));
-					container.appendChild(grupo_div);
-				}
-			}else{
-				container.innerHTML='<p>No existen grupos de artículos aún.</p>';
-			}
-		})
+		}else if(target.id=='export'){
+			this.classList.add('art-exporting');
+			target.style.display='none';
+			target.nextElementSibling.style.display='grid';
+		}else if(this.classList.contains('art-exporting')){
+			let closestArt=target.closest('.articulo');
+			if(closestArt)
+				closestArt.classList.toggle('art-exporting-selected');
+		}else if(target.classList.contains('fa-ellipsis-h')){
+			
+			let closestArt=target.closest('.articulo')
+				,boundingBox=closestArt.getBoundingClientRect();
+			showArtsContextMenu(boundingBox.right-boundingBox.width+15,boundingBox.top+15)
+				.then(boton=>{
+					switch(boton){
+					case 'Modificar':
+						if(!this.classList.contains('art-exporting') && !closestArt.classList.contains('nominado'))
+							abrirEditor(closestArt.dataset.id);
+						break;
+					case 'Destacar':
+						toggleArtAttr('destacado','destacado',closestArt);
+						break;
+					case 'Ocultar':
+						toggleArtAttr('oculto','escondido',closestArt);
+						break;
+					case 'Eliminar':
+						showOptionsMessage(
+							'¿Está seguro de que desea hacer esto? Esta acción no se puede deshacer.'
+							,['Proceder',1]
+							,['Cancelar',0]
+						)
+							.then(res=>{
+								if(+res){
+									// let artEnCuestion=SqS('.articulo[data-id="'+editing+'"]');
+									closestArt.classList.add('nominado');
+									sendJSON('libs/art/delete.php',{ID:closestArt.dataset.id})
+										.then(res=>res.text())
+										.then(res=>{
+											if(+res){
+												closestArt.remove();
+												delete articulos[closestArt.dataset.id];
+											}else closestArt.classList.remove('nominado');
+										})
+								}
+							});
+					default:
+						return;
+					}
+				});
+		}
+	}*/
 	
 });
