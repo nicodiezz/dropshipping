@@ -82,6 +82,7 @@ $nombre=$personalizacion['nombre'];
 			<div id=ven-pedidos></div>
 		</div>
 		
+
 		<div id="grupos" class=notSelectedPanel>
 			<button id="grupo-add">Añadir</button>
 			<div id="grupos-container">
@@ -90,7 +91,40 @@ $nombre=$personalizacion['nombre'];
 		<div id="grupo" class=notSelectedPanel>
 			<h1 id="titulo-grupo"></h1>
 			<input type="text" placeholder="Escribe para filtar artículos">
+			<div class="articulos-botones">	
+				<button onclick="abrirEditor(0,0)" class="articulos-boton" id="add-art">Nuevo artículo</button>
+				<button class="articulos-boton" id="add-sec">Nueva sección</button>
+				<button class="articulos-boton" id="bulk">Subir desde archivo</button>
+				<button class="articulos-boton" id="export">Exportar artículos</button>
+			</div>
 		</div>
+		<form id="art-añadir" class="hidden-scroll notSelectedPanel">
+			<fieldset>
+				<button type=button class="cute-button" id="art-añadir-volver">Volver</button>
+				<h3 class="art-añadir-title">Datos del producto</h3>
+				<p>Nombre</p>
+				<input name=Nombre title="Nombre del Artículo" required class=cool-input>
+				<p>Descripción</p>
+				<textarea class=cool-input name=Descripcion title="Descripción detallada"></textarea>
+				<p>Sección</p>
+				<select class=cool-input name=Seccion id=new-art-sec-input disabled>
+					<option value>Cargando...</option>
+				</select>
+				<p>Precio</p>
+				<div id="art-precio-holder">
+					<span>$ </span><input class="cool-input" name=Precio type="number" step="0.01" required>
+				</div>
+				<p>Código de barra</p>
+				<input class=cool-input name="codigo" title="Código de Barra (13 números)" maxlength="13">
+				<h3>Foto del producto</h3>
+				<div class=imagePicker>
+					<img src="img/not-found.png">
+					<input type=file name=foto class="cute-button">
+					<button type=button onclick="resetImagePicker(this,'img/articulo.php?ID='+editing)" class="cute-button hidden">Reestablecer</button>
+				</div>
+				<input id="art-subir-boton" type=submit value="Subir Artículo" class="cute-button end-button">
+			</fieldset>
+		</form>
 
 		<div id="rec" class=notSelectedPanel>
 		</div>

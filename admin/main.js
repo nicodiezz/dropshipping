@@ -1,5 +1,6 @@
 
-var pedidos={},request=0,reclamosPageNum=0,deletingGrupo;
+var pedidos={},request=0,reclamosPageNum=0,deletingGrupo,grupoID,itemForm;
+
 
 function openScreen(screenID){
 	let prev=SqS('.selected');
@@ -152,6 +153,49 @@ function lastMonthPeriod(){
 	return [todayExploded[0]+'-'+mes+'-'+todayExploded[2],today];
 }
 
+function search(queryString){
+	for(let boton of gEt('ven-list-buttons').children){
+		let isHidden=boton.classList.contains('hidden');
+		if(test(queryString,boton.innerText)){
+			if(isHidden)
+				boton.classList.remove('hidden');
+		}else if(!isHidden)
+			boton.classList.add('hidden');
+	}
+}
+
+function test(queryString,artText){
+	return new RegExp('.*?'+queryString+'.*?','i').test(artText);
+}
+
+var searchID=0;
+
+function startSearch(valor,reiniciar,buscar=true){
+	if(reiniciar){
+		for(let boton of [...SqS('.hidden',ALL)])
+			boton.classList.remove('hidden');
+		searchID++;
+		return true;
+	}else if(buscar){
+		let myID=++searchID;
+		setTimeout(()=>{
+			if(searchID==myID)
+				search(valor);
+		},350);
+	}
+}
+
+function download(URL, nombre){
+	let anchor=B.appendChild(createNode('A',{
+		href:URL
+		,download:nombre
+		,class:'hidden'
+	}));
+	anchor.click();
+	anchor.remove();
+}
+
+//grupos
 function abrirMenuGrupo(event){
 	event.stopPropagation();
 	if(this.classList.contains('grupo-enProceso'))
@@ -228,52 +272,102 @@ function abrirGrupo() {
 			gEt('titulo-grupo').innerText=data.nombre;
 		}
 	);
+	//variable para manejar la panatalla de grupo
+	grupoID=grupo.dataset.id;
 }
 
-function search(queryString){
-	for(let boton of gEt('ven-list-buttons').children){
-		let isHidden=boton.classList.contains('hidden');
-		if(test(queryString,boton.innerText)){
-			if(isHidden)
-				boton.classList.remove('hidden');
-		}else if(!isHidden)
-			boton.classList.add('hidden');
+function abrirEditor(artID=0,secID=0){
+	itemForm.previousElementSibling.classList.add('notSelectedPanel');
+	itemForm.classList.remove('notSelectedPanel');
+	editing=artID;//necessary for submit, editing is global
+	// let eliminarButton=gEt('art-eliminar');
+	if(artID){
+		let thisArt=articulos[artID];
+		for(let campo of [
+			['img','src','img/articulo.php?ID='+artID+'&rand='+Math.random()]
+			,['[name="Nombre"]','defaultValue',thisArt['nombre']]
+			,['[name="Descripcion"]','value',thisArt['descripcion']]
+			// ,['[name="Disponible"]','value',thisArt['disponible']]
+			,['[name="Precio"]','value',thisArt['precio']]
+			,['#new-art-sec-input','value',thisArt['seccionID']]
+			,['[name="codigo"]','value',thisArt['codigo_de_barras']]
+		]){
+			let campoElem=SqS(campo[0],ONLY_ONE,itemForm);
+			campoElem[campo[1]]=campo[2];
+			if(campo[1]=='value')
+				campoElem.defaultValue=campo[2];
+		}
+		// gEt('art-añadir-destacado').firstElementChild.checked=!!+thisArt.destacado;
+		// if(eliminarButton.hasAttribute('style'))
+		// 	eliminarButton.removeAttribute('style');
+	}else{
+		resetArtForm();
+		let select=gEt('new-art-sec-input');
+		select.value=secID;
+		// if(!eliminarButton.hasAttribute('style'))
+		// 	eliminarButton.style.display='none';
+	}
+	gEt('art-subir-boton').value=artID?'Actualizar Artículo':'Subir Artículo';
+}
+function resetArtForm(){
+	let form=D.forms['art-añadir'];
+	form.Nombre.defaultValue='';
+	form.Descripcion.defaultValue='';
+	form.Precio.defaultValue='';
+	form.codigo.defaultValue='';
+	form.reset();
+	form.foto.previousElementSibling.src='img/articulo.php';
+	form.foto.nextElementSibling.classList.add('hidden');
+}
+
+function crearArticulos(...rawArticulos){
+	let artGrid=gEt('art-grid');
+	if(artGrid.firstChild && artGrid.firstChild.tagName=='H2')
+		artGrid.firstChild.remove();
+	for(let artObject of rawArticulos){
+		artObject.descripcion=artObject.descripcion.replaceAll('\\n','\n');
+		articulos[artObject.ID]=artObject;
+		
+		let seccionName=secciones[artObject.seccionID],
+			whole=createNode(
+				'DIV',{
+					class:'articulo'
+					,dataset:{
+						id:artObject.ID
+						,info:artObject.nombre+','+artObject.descripcion+','+artObject.codigo_de_barras+','+seccionName
+					}
+					,children:[
+						['SPAN',{class:'art-symbol'}]
+						,['SPAN',{class:'art-nombre',innerText:artObject.nombre}]
+						,['I',{classList:['fas','fa-ellipsis-h']}]
+						,['SPAN',{children:[
+							['SPAN',{class:'art-precio',innerText:artObject.precio}]
+							,['SPAN',{children:[
+								['SPAN',{innerText:' | '}]
+								,['SPAN',{innerText:seccionName}]
+							]}]
+						]}]
+					]
+				}
+			);
+		if(artObject.disponible==2)
+			whole.classList.add('escondido');
+		if(+artObject.destacado)
+			whole.classList.add('destacado');
+		artGrid.appendChild(whole);
 	}
 }
 
-function test(queryString,artText){
-	return new RegExp('.*?'+queryString+'.*?','i').test(artText);
+//errores:
+function genericCatch(e){
+	console.log(e);
+	noSeHaPodido();
 }
-
-var searchID=0;
-
-function startSearch(valor,reiniciar,buscar=true){
-	if(reiniciar){
-		for(let boton of [...SqS('.hidden',ALL)])
-			boton.classList.remove('hidden');
-		searchID++;
-		return true;
-	}else if(buscar){
-		let myID=++searchID;
-		setTimeout(()=>{
-			if(searchID==myID)
-				search(valor);
-		},350);
-	}
+function noSeHaPodido(){
+	alert('No se ha podido realizar la acción, reintente más tarde.');
 }
-
-function download(URL, nombre){
-	let anchor=B.appendChild(createNode('A',{
-		href:URL
-		,download:nombre
-		,class:'hidden'
-	}));
-	anchor.click();
-	anchor.remove();
-}
-
 addEventListener('DOMContentLoaded',()=>{
-	
+	itemForm=gEt('art-añadir');
 	//events
 	
 	gEt('anvorgesa').onclick=function(e){
@@ -402,8 +496,6 @@ addEventListener('DOMContentLoaded',()=>{
 			})
 			.finally(()=>input.disabled=false);
 	}
-	
-	
 
 	gEt('cue-pass').onclick=()=>{
 		let newPassword=prompt('Ingrese nueva contraseña:').trim();
@@ -435,6 +527,75 @@ addEventListener('DOMContentLoaded',()=>{
 			}else showMessage('Las contraseñas ingresadas no coinciden, intentelo otra vez.');
 		}
 	};
+	
+	let listFilter=gEt('ven-list-filter')
+	
+	listFilter.onkeyup=function(e){
+		let realValue=this.value.trim();
+		startSearch(
+			realValue
+			,!realValue && e.which==8
+			,e.key.length==1 || e.which==8
+		);
+	};
+	
+	listFilter.onchange=function(){
+		let realValue=this.value.trim();
+		startSearch(
+			realValue
+			,!realValue
+		);
+	};
+	
+	//UI building
+	
+	fetch('libs/get-vendedores.php')
+		.then(res=>res.json())
+		.then(vends=>{
+			if(vends.length){
+				let container=gEt('ven-list-buttons');
+				for(let vend of vends)
+					container.appendChild(createNode('BUTTON',{
+						value:vend['ID']
+						,innerText:vend['nombre']
+						,dataset:{habilitado:vend['habilitado']}
+					}));
+			}
+		});
+		
+	gEt('rec').append(createNode('BUTTON',{
+		id:'rec-more'
+		,innerText:'Cargar más reclamos'
+		,onclick:cargarMasReclamos
+	}));
+	
+	cargarMasReclamos();
+	
+	//grupos
+	fetch('libs/grupos/get-all.php')
+		.then(res=>res.json())
+		.then(grupos=>{
+			let container=gEt('grupos-container');
+			if(grupos.length){
+				for(let grupo of grupos){
+					let grupo_div = createNode('DIV',{
+						class:'grupo'
+						,innerText:grupo['nombre']
+						,onclick:abrirGrupo
+						,dataset:{id:grupo['ID']}
+					});
+					grupo_div.appendChild(createNode('BUTTON',{
+						class:"grupo-edit",
+						onclick:abrirMenuGrupo,
+						innerText:'⋮',
+						dataset:{id:grupo['ID']}
+					}));
+					container.appendChild(grupo_div);
+				}
+			}else{
+				container.innerHTML='<p>No existen grupos de artículos aún.</p>';
+			}
+		})
 	
 	gEt('grupo-add').onclick=()=>{
 		let nuevoNombre=prompt('Ingrese el nombre del nuevo grupo.');
@@ -493,73 +654,220 @@ addEventListener('DOMContentLoaded',()=>{
 		}
 		deletingGrupo=null;
 	}
+	//grupo
+	/* ex botones de articulos en vendedor: 
+	gEt('art-inicio').onclick=function(e){
+		let target=e.target;
+		if(target==this)
+			return;
+		if(target.tagName=='BUTTON' && target.classList.contains('new')){
+			let artGrid=gEt('art-grid');
+			
+			if(target.classList.contains('sec')){
+				let nombre=prompt('Escriba el nombre de la nueva categoría:');
+				if(nombre && (nombre=nombre.trim()))
+					sendJSON('libs/new-sec.php',{nombre,parentID:0})
+						.then(res=>res.json())
+						.then(crearSec);
+
+			}else if(target.classList.contains('art'))
+				abrirEditor(0,0);
+			
+			else if(target.id=='bulk')
+				gEt('bulk-message').style.display='flex';
 	
-	let listFilter=gEt('ven-list-filter')
+		}else if(target.id=='export'){
+			this.classList.add('art-exporting');
+			target.style.display='none';
+			target.nextElementSibling.style.display='grid';
+		}else if(this.classList.contains('art-exporting')){
+			let closestArt=target.closest('.articulo');
+			if(closestArt)
+				closestArt.classList.toggle('art-exporting-selected');
+		}else if(target.classList.contains('fa-ellipsis-h')){
+			
+			let closestArt=target.closest('.articulo')
+				,boundingBox=closestArt.getBoundingClientRect();
+			showArtsContextMenu(boundingBox.right-boundingBox.width+15,boundingBox.top+15)
+				.then(boton=>{
+					switch(boton){
+					case 'Modificar':
+						if(!this.classList.contains('art-exporting') && !closestArt.classList.contains('nominado'))
+							abrirEditor(closestArt.dataset.id);
+						break;
+					case 'Destacar':
+						toggleArtAttr('destacado','destacado',closestArt);
+						break;
+					case 'Ocultar':
+						toggleArtAttr('oculto','escondido',closestArt);
+						break;
+					case 'Eliminar':
+						showOptionsMessage(
+							'¿Está seguro de que desea hacer esto? Esta acción no se puede deshacer.'
+							,['Proceder',1]
+							,['Cancelar',0]
+						)
+							.then(res=>{
+								if(+res){
+									// let artEnCuestion=SqS('.articulo[data-id="'+editing+'"]');
+									closestArt.classList.add('nominado');
+									sendJSON('libs/art/delete.php',{ID:closestArt.dataset.id})
+										.then(res=>res.text())
+										.then(res=>{
+											if(+res){
+												closestArt.remove();
+												delete articulos[closestArt.dataset.id];
+											}else closestArt.classList.remove('nominado');
+										})
+								}
+							});
+					default:
+						return;
+					}
+				});
+		}
+	}*/
 	
-	listFilter.onkeyup=function(e){
-		let realValue=this.value.trim();
-		startSearch(
-			realValue
-			,!realValue && e.which==8
-			,e.key.length==1 || e.which==8
-		);
-	};
-	
-	listFilter.onchange=function(){
-		let realValue=this.value.trim();
-		startSearch(
-			realValue
-			,!realValue
-		);
-	};
-	
-	//UI building
-	
-	fetch('libs/get-vendedores.php')
-		.then(res=>res.json())
-		.then(vends=>{
-			if(vends.length){
-				let container=gEt('ven-list-buttons');
-				for(let vend of vends)
-					container.appendChild(createNode('BUTTON',{
-						value:vend['ID']
-						,innerText:vend['nombre']
-						,dataset:{habilitado:vend['habilitado']}
-					}));
-			}
-		});
+	D.forms['art-añadir'].onsubmit=function(){
+		let campos={
+			grupoID:grupoID
+			,nombre:this.Nombre
+			// ,dispo:this.Disponible
+			// ,destacado:+this.destacado.checked
+			,descripcion:this.Descripcion
+			,codigo:this.codigo
+			,precio:this.Precio
+			,foto:this.foto
+			,seccion:this.Seccion
+		},url,body,after,parameters;
 		
-	gEt('rec').append(createNode('BUTTON',{
-		id:'rec-more'
-		,innerText:'Cargar más reclamos'
-		,onclick:cargarMasReclamos
-	}));
-	
-	cargarMasReclamos();
-	
-	fetch('libs/grupos/get-all.php')
-		.then(res=>res.json())
-		.then(grupos=>{
-			let container=gEt('grupos-container');
-			if(grupos.length){
-				for(let grupo of grupos){
-					let grupo_div = createNode('DIV',{
-						class:'grupo'
-						,innerText:grupo['nombre']
-						,onclick:abrirGrupo
-						,dataset:{id:grupo['ID']}
-					});
-					grupo_div.appendChild(createNode('BUTTON',{
-						class:"grupo-edit",
-						onclick:abrirMenuGrupo,
-						innerText:'⋮',
-						dataset:{id:grupo['ID']}
-					}));
-					container.appendChild(grupo_div);
-				}
-			}else{
-				container.innerHTML='<p>No existen grupos de artículos aún.</p>';
+		if(editing){
+			url='libs/art/edit.php';
+			body=[];
+			
+			body.push(['editing',editing]);
+			for(let campo of [
+				'nombre'
+				,'descripcion'
+				,'precio'
+				,'codigo'
+			]){//campos con defaultValue
+				let thisCampo=campos[campo];
+				if(thisCampo.defaultValue!=thisCampo.value)
+					body.push([campo,thisCampo.value]);
 			}
-		})
+			for(let campo of [
+				// ['disponible','dispo'],
+				['seccionID','seccion']
+			]){//campos sin defaultValue
+				let valorCampoReal=campos[campo[1]].value;
+				if(articulos[editing][campo[0]]!=valorCampoReal)
+					body.push([campo[1],valorCampoReal]);
+			}
+			// if(campos.destacado != articulos[editing]['destacado'])
+			// 	body.push(['destacado',campos.destacado]);
+				
+			
+			if(campos.foto.files.length){
+				let fd=new FormData;
+				for(let [key,value] of body)
+					fd.append(key,value);
+				fd.append('foto',campos.foto.files[0]);
+				parameters=['ajax',{body:fd}];
+			}else{
+				if(body.length>1){
+					let newBody={};
+					for(let [key,value] of body)
+						newBody[key]=value;
+					parameters=['sendJSON',newBody];
+				}else{
+					gEt('art-añadir-volver').click();
+					return false;
+				}
+			}
+			
+			after=response=>{
+				let editingArt=SqS('.articulo[data-id="'+editing+'"]')
+					,datos=articulos[editing]
+					,updateInfo=({n=datos.nombre,d=datos.descripcion,c=datos.codigo_de_barras,s=secciones[datos.seccionID]})=>{
+						// let datos=articulos[editing];
+						// editingArt.dataset.info=datos.nombre+','+datos.descripcion+','+datos.codigo_de_barras+','+s
+						editingArt.dataset.info=`${n},${d},${c},${s}`;
+						// let info=editingArt.dataset.info.split(',');
+					};
+				for(let key of Object.keys(response))
+					switch(key){
+					case 'updateName':
+						let newName=campos.nombre.value;
+						editingArt.children[1].innerText=newName;
+						articulos[editing].nombre=newName;
+						updateInfo({n:newName});
+						// campos.nombre.defaultValue=newName;
+						break;
+					case 'updateDesc':
+						// let newDesc
+						updateInfo({d:
+						articulos[editing].descripcion
+						=campos.descripcion.value//;
+							// newDesc
+						});
+						// =newDesc;
+						// campos.descripcion.defaultValue=newDesc;
+						break;
+					case 'updateCode':
+						updateInfo({
+							c:articulos[editing].codigo_de_barras=campos.codigo.value
+						});
+						break;
+					case 'updatePrecio':
+						let newPrecio=campos.precio.value;
+						articulos[editing].precio=newPrecio;
+						editingArt.lastElementChild.firstElementChild.innerText=newPrecio;
+						break;
+					case 'updateSec':
+						let newSec=campos.seccion.value;
+						articulos[editing].seccionID=newSec;
+						editingArt.lastElementChild.lastElementChild.lastElementChild.innerText=secciones[newSec];
+						updateInfo({n:newSec});
+						break;
+					}
+					
+				this.firstElementChild.disabled=false;
+			};
+		}else{//new 
+			if(!campos.foto.files.length){
+				alert('Debe elegir una imagen para el artículo nuevo.');
+				return false;
+			}
+			url='libs/art/new.php';
+			body=new FormData(this);
+			body.append('editing',0);
+			after=response=>{
+				crearArticulos(response);
+				
+				this.firstElementChild.disabled=false;
+			}
+			parameters=['ajax',{body:body}];
+		}
+		
+		this.firstElementChild.disabled=true;
+		
+		W[parameters[0]](url,parameters[1])
+			.then(r=>r.json())
+			.then(response=>{
+				after(response);
+				gEt('art-añadir-volver').click();//volver
+				resetArtForm();
+			})
+			.catch(e=>{
+				this.firstElementChild.disabled=false;
+				genericCatch(e);
+				// console.log(e);
+				// noSeHaPodido();
+			})
+			;
+			
+		return false;
+	};
 	
 });
