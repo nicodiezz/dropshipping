@@ -82,7 +82,6 @@ $nombre=$personalizacion['nombre'];
 			<div id=ven-pedidos></div>
 		</div>
 		
-
 		<div id="grupos" class=notSelectedPanel>
 			<button id="grupo-add">Añadir</button>
 			<div id="grupos-container">

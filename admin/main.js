@@ -388,6 +388,7 @@ addEventListener('DOMContentLoaded',()=>{
 				break;
 			case 2:
 				screenID='grupos';
+				screenID='grupos';
 				break;
 			case 3:
 				screenID='rec';
@@ -396,6 +397,7 @@ addEventListener('DOMContentLoaded',()=>{
 				screenID='cue';
 				break;
 			}
+			openScreen(screenID);
 			openScreen(screenID);
 			this.classList.remove('anvorgesa-abierta');
 		}

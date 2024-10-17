@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `pd_articulos` (
   PRIMARY KEY (`ID`),
   KEY `pd_articulos_grupoid_foreign` (`grupoID`),
   KEY `pd_articulos_seccionid_foreign` (`seccionID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 
 --
@@ -69,7 +69,8 @@ CREATE TABLE IF NOT EXISTS `pd_cambiosdeprecio` (
   `nuevoPrecio` decimal(15,2) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `pd_cambiosdeprecio_articuloid_foreign` (`articuloID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin;
+
 
 
 --
@@ -81,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `pd_grupos` (
   `nombre` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
   `comision` int(11) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 
 --
@@ -146,7 +147,7 @@ CREATE TABLE IF NOT EXISTS `pd_secciones` (
   PRIMARY KEY (`ID`),
   KEY `pd_secciones_parentid_foreign` (`parentID`),
   KEY `pd_secciones_grupoid_foreign` (`grupoID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish_ci;
 
 
 --
@@ -214,61 +215,11 @@ CREATE TABLE IF NOT EXISTS `pd_vendedores_grupos` (
   PRIMARY KEY (`ID`),
   KEY `pd_vendedores_grupos_vendedorid_foreign` (`vendedorID`),
   KEY `pd_vendedores_grupos_grupoid_foreign` (`grupoID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 --
 -- Restricciones para tablas volcadas
 --
-
---
--- Filtros para la tabla `pd_articulos`
---
-ALTER TABLE `pd_articulos`
-  ADD CONSTRAINT `pd_articulos_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
-  ADD CONSTRAINT `pd_articulos_seccionid_foreign` FOREIGN KEY (`seccionID`) REFERENCES `pd_secciones` (`ID`);
-
---
--- Filtros para la tabla `pd_cambiosdeprecio`
---
-ALTER TABLE `pd_cambiosdeprecio`
-  ADD CONSTRAINT `pd_cambiosdeprecio_articuloid_foreign` FOREIGN KEY (`articuloID`) REFERENCES `pd_articulos` (`ID`);
-
---
--- Filtros para la tabla `pd_pedidos_articulos`
---
-
-ALTER TABLE `pd_pedidos_articulos`
-  ADD CONSTRAINT `pd_pedidos_articulos_articuloid_foreign` FOREIGN KEY (`articuloID`) REFERENCES `pd_articulos` (`ID`),
-  ADD CONSTRAINT `pd_pedidos_articulos_pedidoid_foreign` FOREIGN KEY (`pedidoID`) REFERENCES `pd_pedidos_metadatos` (`ID`);
-
---
--- Filtros para la tabla `pd_pedidos_metadatos`
---
-ALTER TABLE `pd_pedidos_metadatos`
-  ADD CONSTRAINT `pd_pedidos_metadatos_vendedorid_foreign` FOREIGN KEY (`vendedorID`) REFERENCES `pd_vendedores` (`ID`);
-
---
--- Filtros para la tabla `pd_secciones`
---
-ALTER TABLE `pd_secciones`
-  ADD CONSTRAINT `pd_secciones_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
-  ADD CONSTRAINT `pd_secciones_parentid_foreign` FOREIGN KEY (`parentID`) REFERENCES `pd_secciones` (`ID`);
-
---
--- Filtros para la tabla `pd_vendedores_grupos`
---
-ALTER TABLE `pd_vendedores_grupos`
-  ADD CONSTRAINT `pd_vendedores_grupos_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
-  ADD CONSTRAINT `pd_vendedores_grupos_vendedorid_foreign` FOREIGN KEY (`vendedorID`) REFERENCES `pd_vendedores` (`ID`);
-
---
--- Filtros para la tabla `pd_grupos_metodosdepago`
---
-
-ALTER TABLE `pd_grupos_metodosdepago`
-  ADD CONSTRAINT `pd_grupos_metodosdepago_metodoid_foreign` FOREIGN KEY (`metodoID`) REFERENCES `pd_metodosdepago` (`ID`),
-  ADD CONSTRAINT `pd_grupos_metodosdepago_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`);
-
 
 --
 -- AUTO_INCREMENT de las tablas volcadas
@@ -361,6 +312,57 @@ MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `pd_grupos_metodosdepago`
 MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+
+
+--
+-- Filtros para la tabla `pd_articulos`
+--
+ALTER TABLE `pd_articulos`
+  ADD CONSTRAINT `pd_articulos_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
+  ADD CONSTRAINT `pd_articulos_seccionid_foreign` FOREIGN KEY (`seccionID`) REFERENCES `pd_secciones` (`ID`);
+
+--
+-- Filtros para la tabla `pd_cambiosdeprecio`
+--
+ALTER TABLE `pd_cambiosdeprecio`
+  ADD CONSTRAINT `pd_cambiosdeprecio_articuloid_foreign` FOREIGN KEY (`articuloID`) REFERENCES `pd_articulos` (`ID`);
+
+--
+-- Filtros para la tabla `pd_pedidos_articulos`
+--
+
+ALTER TABLE `pd_pedidos_articulos`
+  ADD CONSTRAINT `pd_pedidos_articulos_articuloid_foreign` FOREIGN KEY (`articuloID`) REFERENCES `pd_articulos` (`ID`),
+  ADD CONSTRAINT `pd_pedidos_articulos_pedidoid_foreign` FOREIGN KEY (`pedidoID`) REFERENCES `pd_pedidos_metadatos` (`ID`);
+
+--
+-- Filtros para la tabla `pd_pedidos_metadatos`
+--
+ALTER TABLE `pd_pedidos_metadatos`
+  ADD CONSTRAINT `pd_pedidos_metadatos_vendedorid_foreign` FOREIGN KEY (`vendedorID`) REFERENCES `pd_vendedores` (`ID`);
+
+--
+-- Filtros para la tabla `pd_secciones`
+--
+ALTER TABLE `pd_secciones`
+  ADD CONSTRAINT `pd_secciones_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
+  ADD CONSTRAINT `pd_secciones_parentid_foreign` FOREIGN KEY (`parentID`) REFERENCES `pd_secciones` (`ID`);
+
+--
+-- Filtros para la tabla `pd_vendedores_grupos`
+--
+ALTER TABLE `pd_vendedores_grupos`
+  ADD CONSTRAINT `pd_vendedores_grupos_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`),
+  ADD CONSTRAINT `pd_vendedores_grupos_vendedorid_foreign` FOREIGN KEY (`vendedorID`) REFERENCES `pd_vendedores` (`ID`);
+
+--
+-- Filtros para la tabla `pd_grupos_metodosdepago`
+--
+
+ALTER TABLE `pd_grupos_metodosdepago`
+  ADD CONSTRAINT `pd_grupos_metodosdepago_metodoid_foreign` FOREIGN KEY (`metodoID`) REFERENCES `pd_metodosdepago` (`ID`),
+  ADD CONSTRAINT `pd_grupos_metodosdepago_grupoid_foreign` FOREIGN KEY (`grupoID`) REFERENCES `pd_grupos` (`ID`);
+
 
 COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
