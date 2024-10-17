@@ -163,12 +163,9 @@ CREATE TABLE IF NOT EXISTS `pd_vendedores` (
   `habilitado` tinyint NOT NULL DEFAULT '1',
   `nombre` varchar(80) NOT NULL,
   `descripcion` varchar(100) NOT NULL,
-  `ciudad` varchar(60) NOT NULL,
-  `direccion` varchar(150) NOT NULL,
-  `provincia` varchar(60) NOT NULL,
-  `pais` varchar(90) NOT NULL,
   `nombreURL` varchar(80) NOT NULL,
   `minimoCompra` int NOT NULL DEFAULT '500',
+  `entrega` char(60) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
