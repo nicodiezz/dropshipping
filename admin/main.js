@@ -204,11 +204,12 @@ function download(URL, nombre){
 
 function abrirMenuGrupo(event){
 	event.stopPropagation();
+	const grupoDiv= this.parentNode;
 	if(this.classList.contains('grupo-enProceso'))
 		return;
 	let thisName=this.parentNode.childNodes[0].textContent.trim();
 	showOptionsMessage('¿Qué desea hacer con el grupo "'+thisName+'"?'
-		,['Editar',1]
+		//,['Editar',1]
 		,['Eliminar',2]
 		,['Cancelar',0]
 	)
@@ -217,7 +218,7 @@ function abrirMenuGrupo(event){
 			case 0:
 				this.classList.remove('grupo-enProceso');
 				break;
-			case 1:
+			/*case 1:
 				let newName=prompt('Ingrese un nuevo nombre:',thisName);
 				if(!newName || (newName=newName.trim())==thisName)
 					return;
@@ -233,7 +234,7 @@ function abrirMenuGrupo(event){
 						console.log(e);
 						showMessage('Ha ocurrido un error inesperado, vuelva a intentar más tarde.','red');
 					});
-				break;
+				break;*/
 			case 2:
 				if(!confirm('¿Seguro desea eliminar el grupo '+thisName+'?\nEsta acción no se puede revertir.')){
 					this.classList.remove('grupo-enProceso');
@@ -252,12 +253,16 @@ function abrirMenuGrupo(event){
 									gEt('grupo-hasVends-body-cuantos').innerText=cant+' vendedor'+(cant==1?'':'es');
 									gEt('grupo-hasVends').style.display='flex';
 									deletingGrupo=thisID;
-								}else sendJSON('libs/grupos/delete.php',{ID:thisID,newID:0})
+								}else sendJSON('libs/grupos/delete-grup.php',{ID:thisID})
 									.then(res=>res.text())
 									.then(res=>{
-										if(+res)
-											this.remove();
-										else throw new Error('Backend answered with '+res);
+										if(res){
+											showMessage('El grupo se ha eliminado satisfactoriamente.','limegreen');
+											grupoDiv.remove(); 
+											let container=gEt('grupos-container');
+											if(! SqS('.grupo'))	//si no quedan más grupos
+												container.innerHTML='<p>No existen grupos de artículos aún.</p>';
+										}else if(! +res) throw new Error('Backend answered with '+res);
 									})
 							.catch(e=>{
 								this.classList.remove('grupo-enProceso');
@@ -891,25 +896,35 @@ addEventListener('DOMContentLoaded',()=>{
 		let nuevoNombre=prompt('Ingrese el nombre del nuevo grupo.');
 		let comision=prompt('Ingrese la comision del nuevo grupo.');
 		
-		if(nuevoNombre && (nuevoNombre=nuevoNombre.trim())){
-			let newGrupo=createNode('DIV',{
-				classList:['grupo','grupo-enProceso']
-				,innerText:nuevoNombre
-				,onclick:abrirGrupo
-			});
-			gEt('grupos-container').appendChild(newGrupo);
+		if((nuevoNombre && (nuevoNombre=nuevoNombre.trim()))&& !(isNaN(comision) || comision === '')){
 			sendJSON('libs/grupos/add.php',{nombre:nuevoNombre,comision:comision})
 				.then(res=>res.text())
 				.then(res=>{
 					if(+res){
-						newGrupo.classList.remove('grupo-enProceso');
-						newGrupo.dataset.id=res;
 						showMessage('El grupo se ha creado satisfactoriamente.','limegreen');
+
+						let newGrupo=createNode('DIV',{
+							classList:['grupo','grupo-enProceso']
+							,innerText:nuevoNombre
+							,onclick:abrirGrupo
+							,dataset:{id:res}
+						});
+						newGrupo.appendChild(createNode('BUTTON',{
+							class:"grupo-edit"
+							,onclick:abrirMenuGrupo
+							,innerText:'⋮'
+							,dataset:{id:res}
+						}));
+						let container=gEt('grupos-container');
+						container.appendChild(newGrupo);
+						const gruposVacío = container.querySelector('p');
+						if(gruposVacío)
+							gruposVacío.remove();
+						newGrupo.classList.remove('grupo-enProceso');
 					}else throw new Error('Backend answered with '+res);
 				})
 				.catch(e=>{
 					console.log(e);
-					newGrupo.remove();
 					showMessage('Ha ocurrido un error, intente más tarde.\nSi este error le ocurre seguido, contacte al soporte.','red');
 				});
 		}
@@ -929,13 +944,17 @@ addEventListener('DOMContentLoaded',()=>{
 		if(+target.value){
 			let grupoToKill=SqS('.grupo[data-id="'+deletingGrupo+'"]');
 			grupoToKill.classList.add('grupo-enProceso');
-			sendJSON('libs/grupos/delete.php',{ID:deletingGrupo})
+			sendJSON('libs/grupos/delete-grup.php',{ID:deletingGrupo})
 				.then(res=>res.text())
 				.then(res=>{
-					if(+res)
-						grupoToKill.remove();
-					else throw new Error('Backend answered with '+res);
-				})
+					if(res){
+						showMessage('El grupo se ha eliminado satisfactoriamente.','limegreen');
+						grupoToKill.remove(); 
+						let container=gEt('grupos-container');
+					if(! SqS('.grupo'))	//si no quedan más grupos
+						container.innerHTML='<p>No existen grupos de artículos aún.</p>';
+				}else if(! +res) throw new Error('Backend answered with '+res);
+			})
 				.catch(e=>{
 					grupoToKill.classList.remove('grupo-enProceso');
 					console.log(e);
