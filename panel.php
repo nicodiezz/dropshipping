@@ -122,11 +122,7 @@ $nombre=$personalizacion['nombre'];
 						<p>Nro de Teléfono:</p>
 						<input name=numero value="<?=$_SESSION['numero']?>" type="number" step=1>
 						
-						<p>Color:</p>
-						<div id="perfil-color">
-							<input name=color type="color" value="#<?=strtolower(strlen($_SESSION['color'])==3?$_SESSION['color'][0].$_SESSION['color'][0].$_SESSION['color'][1].$_SESSION['color'][1].$_SESSION['color'][2].$_SESSION['color'][2]:$_SESSION['color'])?>">
-							<button type=button id="reestablecer" class="cute-button hidden">Reestablecer</button>
-						</div>
+						
 						
 						<p>Descripción:</p>
 						<textarea maxlength="100" name=descripcion rows=4><?=$_SESSION['descripcion']?></textarea>
@@ -142,34 +138,13 @@ $nombre=$personalizacion['nombre'];
 				<div style="font-size: 1px;color:var(--almost-white);">.</div>
 			</form>
 			<div id=articulos class=notSelectedPanel>
-				<div id="art-context">
-					<div>
-						<button><i class="fas fa-edit"></i>Modificar</button>
-						<button><i class="fas fa-star"></i>Destacar</button>
-						<button><i class="fas fa-eye-slash"></i>Ocultar</button>
-						<button><i class="fas fa-trash"></i>Eliminar</button>
-					</div>
-				</div>
+				
 				<div id=art-inicio>
 					<div id="busqueda">
 						<input id="busqueda-input" type=text placeholder="Escriba aquí para filtrar artículos">
-						<label>
-							<input type="checkbox" id="busqueda-escondidos">
-							<span>Ocultar artículos escondidos</span>
-						</label>
+						
 					</div>
-					<div id="art-bar">
-						<button id="nuevo-art" class="new art">Nuevo Artículo</button>
-						<button class="new sec">Nueva Sección</button>
-						<button class="new" id="bulk">Subir desde archivo</button>
-						<button id=export>Exportar Artículos</button>
-						<div id="art-export-panel">
-							<button id="art-export-panel-cancel">Cancelar</button>
-							<button id="art-export-panel-export">Exportar</button>
-							<button id="art-export-panel-reset">Reiniciar selección</button>
-							<button id="art-export-panel-toggle" title="Solo cambia la selección de los artículos a la vista.">Alternar selección</button>
-						</div>
-					</div>
+					
 					<div id="art-grid" class="hidden-scroll"></div>
 				</div>
 				<form id="art-añadir" class="hidden-scroll notSelectedPanel">
