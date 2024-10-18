@@ -76,14 +76,14 @@ html, body{
 						}
 						/* #campos > * */
 						input:not([type="submit"]):focus{
-							border-bottom: solid 4px #369683 !important;
+							border-bottom: solid 4px var(--color-principal) !important;
 						}
 					#botones{
 						/* display: flex;justify-content: space-evenly; */
 						display: grid;gap:10px;
 						}
 						button, input[type="submit"]{
-							background: #369683;cursor: pointer;
+							background: var(--color-principal);cursor: pointer;
 							/* margin: .75rem; */
 							padding: .5em 1em;
 							color: white;

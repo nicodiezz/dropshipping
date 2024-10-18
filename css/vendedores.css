@@ -1,3 +1,7 @@
+:root{
+	--color-dinero: #369683;
+}
+
 html,body{
 	height:100%;}
 	html{
@@ -106,7 +110,7 @@ html,body{
 									}
 									.precio {
 										font-weight: bold;
-										color: #369683; /* ! Es el mismo que el color principal. */
+										color: var(--color-dinero);
 										/* TODO convertir en variable */
 									}
 										.precio::before {
@@ -223,7 +227,7 @@ html,body{
 						display: grid;grid-template-columns: 1fr auto;
 						font-size:larger;}
 				#resumen-chiquito{
-					background: #369683;cursor: pointer;
+					background: var(--color-dinero);cursor: pointer;
 					margin: .75rem;padding: .5em 1em;
 					color: white;font-weight: bold;text-align: center;
 					border-radius:8px;
