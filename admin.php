@@ -25,6 +25,41 @@ $nombre=$personalizacion['nombre'];
 	
 </head>
 <body>
+<div id="bulk-message">
+		<div>
+			<div id="bulk-form">
+				<span>El archivo debe ser un ZIP extraído de la página o un archivo de Microsoft Excel que cumpla el siguiente formato:</span>
+				<div id="bulk-format-holder">
+					<table id="bulk-format">
+					<tbody>
+						<tr><td></td> <td>A</td> <td>B</td> <td>C</td> <td>D</td> <td>E</td> <td>...</td></tr>
+						<tr><td>1</td> <td></td> <td><b>Códigos</b></td> <td><b>Nombres</b></td> <td><b>Descripciones</b></td> <td><b>Precios</b></td> <td></td></tr>
+						<tr><td>2</td> <td></td> <td>Código 1</td> <td>Nombre 1</td> <td>Descripción 1</td> <td>Precio 1</td> <td></td></tr>
+						<tr><td>3</td> <td></td> <td>Código 2</td> <td>Nombre 2</td> <td>Descripcion 2</td> <td>Precio 2</td> <td></td></tr>
+						<tr><td>...</td> <td></td> <td>...</td> <td>...</td> <td>...</td> <td>...</td> <td></td></tr>
+					</tbody>
+					</table>
+				</div>
+				<span>Defina el área donde se agregarán los archivos.</span>
+				<div id="bulk-area">
+					<label>
+						<input type="radio" name="bulk-area-radio" value=0 checked class="bulk-tiny-input"><select class="bulk-area-input" id="bulk-area-select" disabled>
+							<option value>Cargando...</option>
+						</select>
+					</label>
+					<label>
+						<input type="radio" name="bulk-area-radio" value=1 class="bulk-tiny-input"><input class="bulk-area-input" type="text" placeholder="Nueva área..." disabled>
+					</label>
+				</div>
+				<label style="display:none">
+					<input class="bulk-tiny-input" id="bulk-destacado" type="checkbox" onchange="if(this.checked)showMessage('Recuerde que no se recomienda destacar muchos artículos, lo recomendado es entre 4 y 10.')">
+					<span>Destacar Todos</span>
+				</label>
+				<button id="bulk-select">Seleccionar Archivo</button>
+			</div>
+		</div>
+	</div>
+	
 	<div id="header">
 		<span id="header-anvorgesa" onclick="gEt('anvorgesa').classList.add('anvorgesa-abierta')">☰</span>
 		<h1>Bienvenido, <span id=nombre><?=$_SESSION['nombre']?></span></h1>
@@ -89,12 +124,64 @@ $nombre=$personalizacion['nombre'];
 		</div>
 		<div id="grupo" class=notSelectedPanel>
 			<h1 id="titulo-grupo"></h1>
-			<input type="text" placeholder="Escribe para filtar artículos">
-			<div class="articulos-botones">	
-				<button onclick="abrirEditor(0,0)" class="articulos-boton" id="add-art">Nuevo artículo</button>
-				<button class="articulos-boton" id="add-sec">Nueva sección</button>
-				<button class="articulos-boton" id="bulk">Subir desde archivo</button>
-				<button class="articulos-boton" id="export">Exportar artículos</button>
+			<div id=articulos>
+				<div id="art-context">
+					<div>
+						<button><i class="fas fa-edit"></i>Modificar</button>
+						<button><i class="fas fa-star"></i>Destacar</button>
+						<button><i class="fas fa-eye-slash"></i>Ocultar</button>
+						<button><i class="fas fa-trash"></i>Eliminar</button>
+					</div>
+				</div>
+				<div id=art-inicio>
+					<div id="busqueda">
+						<input id="busqueda-input" type=text placeholder="Escriba aquí para filtrar artículos">
+						<label>
+							<input type="checkbox" id="busqueda-escondidos">
+							<span>Ocultar artículos escondidos</span>
+						</label>
+					</div>
+					<div id="art-bar">
+						<button id="nuevo-art" class="new art">Nuevo Artículo</button>
+						<button class="new sec">Nueva Sección</button>
+						<button class="new" id="bulk">Subir desde archivo</button>
+						<button id=export>Exportar Artículos</button>
+						<div id="art-export-panel">
+							<button id="art-export-panel-cancel">Cancelar</button>
+							<button id="art-export-panel-export">Exportar</button>
+							<button id="art-export-panel-reset">Reiniciar selección</button>
+							<button id="art-export-panel-toggle" title="Solo cambia la selección de los artículos a la vista.">Alternar selección</button>
+						</div>
+					</div>
+					<div id="art-grid" class="hidden-scroll"></div>
+				</div>
+				<form id="art-añadir" class="hidden-scroll notSelectedPanel">
+					<fieldset>
+						<button type=button class="cute-button" id="art-añadir-volver">Volver</button>
+						<h3 class="art-añadir-title">Datos del producto</h3>
+						<p>Nombre</p>
+						<input name=Nombre title="Nombre del Artículo" required class=cool-input>
+						<p>Descripción</p>
+						<textarea class=cool-input name=Descripcion title="Descripción detallada"></textarea>
+						<p>Sección</p>
+						<select class=cool-input name=Seccion id=new-art-sec-input disabled>
+							<option value>Cargando...</option>
+						</select>
+						<p>Precio</p>
+						<div id="art-precio-holder">
+							<span>$ </span><input class="cool-input" name=Precio type="number" step="0.01" required>
+						</div>
+						<p>Código de barra</p>
+						<input class=cool-input name="codigo" title="Código de Barra (13 números)" maxlength="13">
+						<h3>Foto del producto</h3>
+						<div class=imagePicker>
+							<img src="img/not-found.png">
+							<input type=file name=foto class="cute-button">
+							<button type=button onclick="resetImagePicker(this,'img/articulo.php?ID='+editing)" class="cute-button hidden">Reestablecer</button>
+						</div>
+						<input id="art-subir-boton" type=submit value="Subir Artículo" class="cute-button end-button">
+					</fieldset>
+				</form>
 			</div>
 		</div>
 		<form id="art-añadir" class="hidden-scroll notSelectedPanel">
