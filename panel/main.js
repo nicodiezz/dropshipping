@@ -585,17 +585,7 @@ addEventListener('DOMContentLoaded',()=>{
 	
 	[...SqS('.imagePicker input',ALL)].map(e=>e.onchange=changeImage);
 	
-	let colorField=SqS('[type="color"]',ONLY_ONE,perfil)
-		,reestablecerColor=gEt('reestablecer');
-	reestablecerColor.onclick=function(){
-		colorField.value=colorField.defaultValue;
-		SqS('html').style.background=colorField.defaultValue;
-		this.classList.add('hidden');
-	}
-	colorField.onchange=function(){
-		reestablecerColor.classList.remove('hidden');
-		SqS('html').style.background=this.value;
-	}
+	
 	
 	gEt('art-inicio').onclick=function(e){
 		let target=e.target;
