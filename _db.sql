@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `pd_articulos` (
   `disponible` tinyint(4) NOT NULL DEFAULT '1',
   `ext_de_img` varchar(5) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
   `destacado` tinyint(1) NOT NULL DEFAULT 0,
-  `seccionID` int(11) NOT NULL DEFAULT 0,
+  `seccionID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   KEY `pd_articulos_grupoid_foreign` (`grupoID`),
   KEY `pd_articulos_seccionid_foreign` (`seccionID`)
@@ -163,12 +163,9 @@ CREATE TABLE IF NOT EXISTS `pd_vendedores` (
   `habilitado` tinyint NOT NULL DEFAULT '1',
   `nombre` varchar(80) NOT NULL,
   `descripcion` varchar(100) NOT NULL,
-  `ciudad` varchar(60) NOT NULL,
-  `direccion` varchar(150) NOT NULL,
-  `provincia` varchar(60) NOT NULL,
-  `pais` varchar(90) NOT NULL,
   `nombreURL` varchar(80) NOT NULL,
   `minimoCompra` int NOT NULL DEFAULT '500',
+  `entrega` char(60) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
