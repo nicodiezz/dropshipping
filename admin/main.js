@@ -1,5 +1,5 @@
 
-var pedidos={},request=0,reclamosPageNum=0,deletingGrupo;
+var pedidos={},request=0,reclamosPageNum=0,deletingGrupo,grupoID;
 var articulos={}
 	,editing=0
 	,itemForm
@@ -276,13 +276,16 @@ function abrirMenuGrupo(event){
 function abrirGrupo() {
 	openScreen('grupo');
 	let grupo=this;
+	grupoID=grupo.dataset.id //variable para controlar el grupo en el q se halla el usuario
 	sendJSON('libs/grupos/get.php',{grupoID:grupo.dataset.id})
 	.then(res=>res.json()).
 	then(
 		data=>{
 			gEt('titulo-grupo').innerText=data.nombre;
-		}
-	);
+		})
+	.catch(e=>{
+		console.log(e);
+	});
 }
 //grupo-articulos
 var searchID=0;
@@ -1316,6 +1319,8 @@ addEventListener('DOMContentLoaded',()=>{
 			}
 			url='libs/art/new.php';
 			body=new FormData(this);
+			//le paso grupo ID por post a libs/art/new.php
+			body.append('grupoID',grupoID);
 			body.append('editing',0);
 			after=response=>{
 				crearArticulos(response);
